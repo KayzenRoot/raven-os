@@ -63,13 +63,19 @@ Use runtime `--help` on each command; CircleCI CLI v1 flags may change between r
 
 ## Manual M04 trigger (`run_m04=true`)
 
-The heavy workflow is **disabled by default**. Trigger exactly one run with the Boolean pipeline parameter:
+The heavy workflow is **disabled by default**. CircleCI CLI `--param run_m04=true` passes a string, not a boolean, so use the repository trigger helper:
 
 ```powershell
-circleci run trigger --help
+just trigger-m04-cloud
 ```
 
-Use the syntax supported by your installed CLI to target branch `main` and set `run_m04=true`. Do not change the default parameter in config.
+Equivalent authenticated API path (uses stored OAuth token via `circleci api`):
+
+```powershell
+uv run python -m scripts.trigger_m04_pipeline
+```
+
+Do not change the default parameter in config.
 
 Monitor without the browser:
 

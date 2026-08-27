@@ -159,7 +159,11 @@ def test_ovmf_candidate_list_is_non_empty() -> None:
     assert OVMF_FIRMWARE_CANDIDATES
 
 
-def test_detect_uefi_firmware_returns_none_when_firmware_missing(tmp_path: Path) -> None:
+def test_detect_uefi_firmware_returns_none_when_firmware_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("scripts.raven_build_config.OVMF_FIRMWARE_CANDIDATES", ())
+    monkeypatch.setattr("scripts.raven_build_config.OVMF_SEARCH_DIRS", ())
     assert detect_uefi_firmware(tmp_path / "evidence") is None
 
 

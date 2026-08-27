@@ -54,5 +54,9 @@ run-m04-cloud:
 circleci-validate:
     circleci config validate
 
+# Trigger manual M04 cloud pipeline (boolean run_m04 via API JSON)
+trigger-m04-cloud:
+    uv run python -m scripts.trigger_m04_pipeline
+
 review:
     uv run python scripts/create_review.py --increment INC-002
