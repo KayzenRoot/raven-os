@@ -45,15 +45,7 @@ jobs:
           command: |
             set -euo pipefail
             source "$BASH_ENV"
-            python3 - <<'PY'
-            import json
-            from pathlib import Path
-            p = Path(".build/evidence/run-m04-cloud.json")
-            result = json.loads(p.read_text())["result"] if p.exists() else "FAILED"
-            print(f"cloud result: {result}")
-            if result != "PASS_REVIEW_READY":
-                raise SystemExit(1)
-            PY
+            uv run python -m scripts.finalize_cloud_result
 
 workflows:
   m04-manual:

@@ -18,7 +18,7 @@ Per Prompt 002 instruction from Sol (not executor self-acceptance):
 
 ## Current scope
 
-INC-002 / Prompt 002C — CircleCI Free cloud Builder config pushed; first real M04 cloud run pending.
+INC-002 / Prompt 002C-R1 — CircleCI config parse fix pushed; re-trigger manual `run_m04=true` pending.
 
 ## Completed (Sol-accepted)
 
@@ -30,7 +30,7 @@ INC-002 / Prompt 002C — CircleCI Free cloud Builder config pushed; first real 
 
 | Item | Status |
 |------|--------|
-| INC-002 / M04 | **BLOCKED** — CircleCI project setup + first manual `run_m04=true` pipeline pending |
+| INC-002 / M04 | **BLOCKED** — CircleCI connected; manual `run_m04=true` re-trigger pending after 002C-R1 parse fix |
 
 ## Prompt 002C infrastructure change (applied in source)
 
@@ -38,16 +38,14 @@ INC-002 / Prompt 002C — CircleCI Free cloud Builder config pushed; first real 
 - `.circleci/config.yml` with manual pipeline parameter `run_m04` (default `false`)
 - `scripts/run_m04_cloud.py` orchestrates existing Justfile/scripts
 - TCG + UEFI/OVMF supported on cloud when KVM absent (`RAVEN_CLOUD_BUILDER=1`)
-- Remote artifact policy: REVIEW ZIP only (no QCOW2/OCI/storage upload)
+- `scripts/finalize_cloud_result.py` finalizes CircleCI job status (no shell heredocs in YAML)
 
 ## Blockers
 
 **Next human/operator step (not yet executed):**
 
-1. Open CircleCI and connect project `KayzenRoot/raven-os` on branch `main`
-2. Click **Set Up Project** (do not enable paid features/DLC)
-3. Run pipeline manually with `run_m04=true`
-4. Download REVIEW ZIP artifact after the job completes
+1. Return to CircleCI and manually trigger `main` with `run_m04=true` again
+2. Download REVIEW ZIP artifact after the job completes
 
 Source branch remains **M04 BLOCKED** until Sol audits a successful cloud run.
 

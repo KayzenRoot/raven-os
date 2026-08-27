@@ -62,3 +62,28 @@ def test_run_m04_cloud_orchestrator_exists() -> None:
     assert "just ci-image" not in text  # uses explicit gate plan, not hidden duplicate logic only
     assert "builder-preflight" in text
     assert "boot-smoke" in text
+
+
+def test_circleci_finalizes_via_repository_script() -> None:
+    text = CIRCLECI_CONFIG.read_text(encoding="utf-8")
+    assert "scripts.finalize_cloud_result" in text
+    text = CIRCLECI_CONFIG.read_text(encoding="utf-8")
+    assert "when: << pipeline.parameters.run_m04 >>" in text
+
+
+def test_circleci_rejects_shell_heredoc_syntax() -> None:
+    text = CIRCLECI_CONFIG.read_text(encoding="utf-8")
+    allowed_interpolation = "<< pipeline.parameters.run_m04 >>"
+    forbidden_tokens = ("<<'PY'", '<<"PY"', "<<PY", "<<EOF", "<<'EOF'", '<<"EOF"')
+    for token in forbidden_tokens:
+        assert token not in text, f"shell heredoc token must not appear in CircleCI config: {token}"
+
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        if "<<" not in line:
+            continue
+        if allowed_interpolation in line:
+            continue
+        raise AssertionError(
+            "unexpected '<<' outside CircleCI parameter interpolation "
+            f"on line {line_number}: {line.strip()}"
+        )
