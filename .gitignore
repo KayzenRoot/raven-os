@@ -1,0 +1,94 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyright/
+.ty/
+
+# Coverage / test outputs
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+
+# uv / packaging
+uv-cache/
+
+# Local review outputs (generated)
+.review/
+*.REVIEW.zip
+RAVEN-OS-*-REVIEW.zip
+
+# M04 local build outputs (generated; never commit artifacts)
+.build/
+images/
+qcow2/
+evidence/
+
+# Secrets / env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_rsa.*
+credentials.json
+secrets.json
+*.keystore
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# VM / image / container artifacts
+*.qcow2
+*.raw
+*.vmdk
+*.vhd
+*.vhdx
+*.iso
+*.img
+podman-storage/
+containers/storage/
+
+# AI model weights / large binaries
+*.gguf
+*.ggml
+*.safetensors
+*.onnx
+*.pt
+*.pth
+*.bin
+models/
+weights/
+
+# Node (future guards)
+node_modules/

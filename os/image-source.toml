@@ -1,0 +1,19 @@
+# Raven OS V0.1 image source manifest (M04)
+# Refresh verified digest on the Raven Builder with:
+#   just builder-preflight
+# Do not commit a fabricated digest.
+
+[image]
+fedora_major = 44
+base_reference = "quay.io/fedora/fedora-kinoite:44"
+base_digest = ""
+digest_verification_state = "pending"
+target_architecture = "x86_64"
+desktop_session_family = "kde-plasma-wayland"
+qcow2_root_filesystem = "btrfs"
+raven_local_image = "localhost/raven-os:0.1-dev"
+
+[tooling]
+bootc_image_builder_reference = "quay.io/centos-bootc/bootc-image-builder:latest"
+bootc_image_builder_policy = "verify-on-builder-before-pin"
+bootc_image_builder_resolved_digest = ""
