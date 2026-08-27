@@ -10,6 +10,7 @@ Operational and architecture docs for Raven OS V0.1 (VM Cognitive Seed).
 | [versions/v0.1/CHECKPOINT.md](versions/v0.1/CHECKPOINT.md) | Current phase, progress, blockers, next step |
 | [versions/v0.1/DEFINITION-OF-DONE.md](versions/v0.1/DEFINITION-OF-DONE.md) | V0.1 closure gates and success proof |
 | [versions/v0.1/BUILDER-SETUP.md](versions/v0.1/BUILDER-SETUP.md) | Raven Builder VM setup and Layer B gate sequence |
+| [versions/v0.1/CIRCLECI-OPERATOR.md](versions/v0.1/CIRCLECI-OPERATOR.md) | CircleCI CLI auth, validate, trigger, and monitor (developer-only) |
 
 ## Architecture maps
 
@@ -47,6 +48,7 @@ Canonical facade: `just` (see root `Justfile`).
 | `just boot-smoke` | `uv run python -m scripts.boot_smoke` |
 | `just ci-image` | builder-preflight → build-image → image-check → build-qcow2 → artifact-metadata → boot-smoke |
 | `just run-m04-cloud` | `uv run python -m scripts.run_m04_cloud` |
+| `just circleci-validate` | `circleci config validate` |
 | `just review` | `uv run python scripts/create_review.py --increment INC-002` |
 | `just format` | `uv run ruff format .` |
 

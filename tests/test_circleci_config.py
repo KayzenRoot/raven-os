@@ -11,7 +11,18 @@ ADR = ROOT / "docs" / "adr" / "0001-use-circleci-free-as-primary-v0.1-cloud-buil
 RUN_M04 = ROOT / "scripts" / "run_m04_cloud.py"
 
 
-def test_circleci_config_exists() -> None:
+def test_justfile_exposes_circleci_validate() -> None:
+    text = (ROOT / "Justfile").read_text(encoding="utf-8")
+    assert "circleci-validate:" in text
+    assert "circleci config validate" in text
+
+
+def test_circleci_operator_doc_exists() -> None:
+    doc = ROOT / "docs" / "versions" / "v0.1" / "CIRCLECI-OPERATOR.md"
+    assert doc.is_file()
+    body = doc.read_text(encoding="utf-8")
+    assert "circleci auth login" in body
+    assert "run_m04=true" in body
     assert CIRCLECI_CONFIG.is_file()
 
 

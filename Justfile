@@ -50,5 +50,9 @@ ci-image: builder-preflight build-image image-check build-qcow2 artifact-metadat
 run-m04-cloud:
     uv run python -m scripts.run_m04_cloud
 
+# Validate CircleCI config before cloud spend (requires CircleCI CLI)
+circleci-validate:
+    circleci config validate
+
 review:
     uv run python scripts/create_review.py --increment INC-002

@@ -2,7 +2,7 @@
 
 - **STATUS:** IN PROGRESS
 - **VERSION:** V0.1
-- **PHASE:** Image Foundation (M04) — Prompt 002C CircleCI cloud builder
+- **PHASE:** Image Foundation (M04) — Prompt 002C-R2 CircleCI CLI autonomous ops
 - **OBJECTIVE:** Deliver a small VM Cognitive Seed (local-first cognitive Linux OS seed), not the full long-term product.
 - **VERSION PROGRESS:** 20% (20/100 Sol-accepted points; M04 pending real cloud/local Layer B)
 - **COMPLETED POINTS:** 20
@@ -30,7 +30,7 @@ INC-002 / Prompt 002C-R1 — CircleCI config parse fix pushed; re-trigger manual
 
 | Item | Status |
 |------|--------|
-| INC-002 / M04 | **BLOCKED** — CircleCI connected; manual `run_m04=true` re-trigger pending after 002C-R1 parse fix |
+| INC-002 / M04 | **BLOCKED** — real cloud failure undiagnosed; complete `circleci auth login` then inspect latest failed run |
 
 ## Prompt 002C infrastructure change (applied in source)
 
@@ -42,10 +42,12 @@ INC-002 / Prompt 002C-R1 — CircleCI config parse fix pushed; re-trigger manual
 
 ## Blockers
 
-**Next human/operator step (not yet executed):**
+**Next human/operator step:**
 
-1. Return to CircleCI and manually trigger `main` with `run_m04=true` again
-2. Download REVIEW ZIP artifact after the job completes
+1. Complete CircleCI CLI OAuth: `circleci auth login` (browser authorize; no token in Git)
+2. Link project: `circleci project link` from repository root
+3. Inspect failed run: `circleci run list --json` → `circleci run get <id>` / `circleci job get <id>`
+4. After fix + `just circleci-validate` + `just ci`, trigger one M04 run with `run_m04=true`
 
 Source branch remains **M04 BLOCKED** until Sol audits a successful cloud run.
 
