@@ -12,12 +12,16 @@ from typing import Any
 from scripts.raven_build_config import (
     BIB_REFERENCE,
     DEFAULT_BASE_IMAGE,
+    acceleration_blocker,
     build_paths,
     command_exists,
     detect_uefi_firmware,
+    is_cloud_builder,
     is_linux_x86_64,
+    kvm_device_present,
     load_manifest,
     platform_summary,
+    resolve_acceleration,
     resolve_podman_context,
     run_podman,
     update_manifest_verified_digests,
@@ -110,6 +114,8 @@ def evaluate_preflight(repo_root: Path | None = None) -> dict[str, Any]:
     tooling = manifest["tooling"]
     base_reference = str(image.get("base_reference", DEFAULT_BASE_IMAGE))
     bib_reference = str(tooling.get("bootc_image_builder_reference", BIB_REFERENCE))
+    cloud_builder = is_cloud_builder()
+    acceleration = resolve_acceleration()
 
     uefi = detect_uefi_firmware(paths.evidence_dir)
     podman_ctx = resolve_podman_context(paths) if is_linux_x86_64() else None
@@ -118,6 +124,9 @@ def evaluate_preflight(repo_root: Path | None = None) -> dict[str, Any]:
 
     checks: dict[str, Any] = {
         "platform": platform_summary(),
+        "builder_authority": "circleci-cloud" if cloud_builder else "local-linux",
+        "acceleration": acceleration,
+        "cloud_builder": cloud_builder,
         "tools": {
             "podman": command_exists("podman"),
             "just": command_exists("just"),
@@ -125,7 +134,7 @@ def evaluate_preflight(repo_root: Path | None = None) -> dict[str, Any]:
             "qemu-system-x86_64": command_exists("qemu-system-x86_64"),
         },
         "disk_free_gb": disk_free_gb(paths.repo_root),
-        "kvm": {"available": kvm_available()} if is_linux_x86_64() else {"available": False},
+        "kvm": {"available": kvm_device_present()} if is_linux_x86_64() else {"available": False},
         "linux_x86_64": is_linux_x86_64(),
         "uefi_firmware": {
             "available": uefi is not None,
@@ -166,8 +175,9 @@ def evaluate_preflight(repo_root: Path | None = None) -> dict[str, Any]:
         blockers.append("UEFI/OVMF firmware unavailable")
     if checks["disk_free_gb"] is not None and checks["disk_free_gb"] < 40:
         blockers.append("insufficient free disk (<40 GiB recommended for image builds)")
-    if not checks["kvm"]["available"]:
-        blockers.append("KVM unavailable (/dev/kvm missing)")
+    accel_blocker = acceleration_blocker(cloud_builder=cloud_builder)
+    if accel_blocker:
+        blockers.append(accel_blocker)
     if checks["base_image"]["status"] != "ok":
         blockers.append(
             f"base image verification blocked: {checks['base_image'].get('reason', 'unknown')}"
@@ -208,6 +218,8 @@ def write_evidence(report: dict[str, Any], paths: Any) -> None:
         f"overall: {report['overall']}",
         f"platform: {report['checks']['platform']}",
         f"blockers: {', '.join(report['blockers']) or 'none'}",
+        f"builder_authority: {report['checks']['builder_authority']}",
+        f"acceleration: {report['checks']['acceleration']}",
         f"base_reference: {report['manifest_base_reference']}",
         f"uefi_firmware: {report['checks']['uefi_firmware']}",
         f"podman_storage: {report['checks']['podman_storage']}",

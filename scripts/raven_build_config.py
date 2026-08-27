@@ -256,3 +256,29 @@ def is_linux_x86_64() -> bool:
         "x86_64",
         "amd64",
     }
+
+
+def is_cloud_builder() -> bool:
+    return os.environ.get("RAVEN_CLOUD_BUILDER", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+
+
+def kvm_device_present() -> bool:
+    return Path("/dev/kvm").exists()
+
+
+def resolve_acceleration() -> str:
+    """Return ``kvm`` when usable, otherwise ``tcg`` (accepted on cloud builders)."""
+    if kvm_device_present():
+        return "kvm"
+    return "tcg"
+
+
+def acceleration_blocker(*, cloud_builder: bool | None = None) -> str | None:
+    cloud = is_cloud_builder() if cloud_builder is None else cloud_builder
+    if kvm_device_present() or cloud:
+        return None
+    return "KVM unavailable (/dev/kvm missing) and cloud TCG fallback not enabled"

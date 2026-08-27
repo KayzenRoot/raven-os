@@ -18,7 +18,7 @@ Operational and architecture docs for Raven OS V0.1 (VM Cognitive Seed).
 | [architecture/CODE-ATLAS.md](architecture/CODE-ATLAS.md) | Repository areas, ownership, V0.1 boundaries |
 | [architecture/MODULE-REGISTRY.md](architecture/MODULE-REGISTRY.md) | M01–M10 registry |
 | [architecture/TEST-MAP.md](architecture/TEST-MAP.md) | Proof categories and automated tests |
-| [adr/INDEX.md](adr/INDEX.md) | ADR convention and freeze index |
+| [adr/INDEX.md](adr/INDEX.md) | ADR convention; ADR-0001 CircleCI primary builder |
 
 ## Image source manifest
 
@@ -46,6 +46,7 @@ Canonical facade: `just` (see root `Justfile`).
 | `just artifact-metadata` | `uv run python -m scripts.artifact_metadata` |
 | `just boot-smoke` | `uv run python -m scripts.boot_smoke` |
 | `just ci-image` | builder-preflight → build-image → image-check → build-qcow2 → artifact-metadata → boot-smoke |
+| `just run-m04-cloud` | `uv run python -m scripts.run_m04_cloud` |
 | `just review` | `uv run python scripts/create_review.py --increment INC-002` |
 | `just format` | `uv run ruff format .` |
 

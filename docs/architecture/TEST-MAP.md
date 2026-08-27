@@ -27,6 +27,16 @@
 | Test module | Covers |
 |-------------|--------|
 | `tests/test_m04_image_contracts.py` | Containerfile/manifest; UEFI/OVMF boot smoke contract; shared Podman storage; path guards; M01–M03 ACCEPTED; M04 not ACCEPTED |
+| `tests/test_circleci_config.py` | `.circleci/config.yml` manual `run_m04`; machine executor; no DLC/cache/workspace; REVIEW ZIP artifact only |
+| `tests/test_cloud_acceleration.py` | KVM/TCG acceleration policy; UEFI pflash command builder |
+
+## CircleCI cloud gates (manual Layer B)
+
+| Command / artifact | Layer | Purpose |
+|--------------------|-------|---------|
+| Pipeline parameter `run_m04=true` | B | Manual heavy workflow only |
+| `just run-m04-cloud` / `scripts/run_m04_cloud.py` | B | Ordered M04 gates + REVIEW ZIP |
+| CircleCI artifact | B | `RAVEN-OS-V0.1-INC-002-REVIEW.zip` only |
 
 ## Quality / image commands
 

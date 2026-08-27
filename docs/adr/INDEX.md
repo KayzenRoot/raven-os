@@ -8,10 +8,12 @@
 
 ## Externally frozen context (V0.1)
 
-The V0.1 architecture freeze (product scope, bootc/Fedora 44/Kinoite family, kernel policy, Plasma/Wayland, systemd, D-Bus contracts, Python/uv, CognitiveBackend/Hermes adapter plan, PySide6/QML, SQLite WAL, XDG TOML config, zero-paid-infrastructure, Builder VM authority) is **external frozen context**, not restated as individual ADRs in INC-001.
+The V0.1 architecture freeze (product scope, bootc/Fedora 44/Kinoite family, kernel policy, Plasma/Wayland, systemd, D-Bus contracts, Python/uv, CognitiveBackend/Hermes adapter plan, PySide6/QML, SQLite WAL, XDG TOML config, zero-paid-infrastructure) is **external frozen context**.
+
+ADR-0001 supersedes **only** the mandatory-local-VM Builder authority for the current M04 phase.
 
 ## ADR log
 
 | ID | Title | Status | Notes |
 |----|-------|--------|-------|
-| — | *(none yet)* | — | INC-001 made only local tooling choices documented in `pyproject.toml` / REVIEW (Python ≥3.12, ruff, mypy, pytest, uv). |
+| 0001 | [Use CircleCI Free as primary V0.1 cloud build authority](0001-use-circleci-free-as-primary-v0.1-cloud-build-authority.md) | Accepted | Prompt 002C — primary cloud Builder; local Fedora Builder fallback |

@@ -2,9 +2,9 @@
 
 - **STATUS:** IN PROGRESS
 - **VERSION:** V0.1
-- **PHASE:** Image Foundation (M04) — Prompt 002B correction
+- **PHASE:** Image Foundation (M04) — Prompt 002C CircleCI cloud builder
 - **OBJECTIVE:** Deliver a small VM Cognitive Seed (local-first cognitive Linux OS seed), not the full long-term product.
-- **VERSION PROGRESS:** 20% (20/100 Sol-accepted points; M04 pending Builder Layer B)
+- **VERSION PROGRESS:** 20% (20/100 Sol-accepted points; M04 pending real cloud/local Layer B)
 - **COMPLETED POINTS:** 20
 
 ## Sol state transition (INC-001)
@@ -18,7 +18,7 @@ Per Prompt 002 instruction from Sol (not executor self-acceptance):
 
 ## Current scope
 
-INC-002 / Prompt 002B — Layer A corrections applied; Layer B **BLOCKED** on this Windows executor host.
+INC-002 / Prompt 002C — CircleCI Free cloud Builder config pushed; first real M04 cloud run pending.
 
 ## Completed (Sol-accepted)
 
@@ -30,68 +30,52 @@ INC-002 / Prompt 002B — Layer A corrections applied; Layer B **BLOCKED** on th
 
 | Item | Status |
 |------|--------|
-| INC-002 / M04 | **BLOCKED** — Raven Builder Layer B not executed on this host |
+| INC-002 / M04 | **BLOCKED** — CircleCI project setup + first manual `run_m04=true` pipeline pending |
 
-## Prompt 002B Layer A corrections (applied)
+## Prompt 002C infrastructure change (applied in source)
 
-- Boot smoke now requires explicit **UEFI/OVMF pflash** firmware (no implicit BIOS proof)
-- Preflight blocks when OVMF firmware is unavailable
-- Podman build/QCOW2/image-check share repo-local graphroot via `CONTAINERS_STORAGE_CONF`
-- bootc-image-builder bind-mounts the same graphroot (no rootless/rootful mismatch)
-- Builder setup instructions: [BUILDER-SETUP.md](BUILDER-SETUP.md)
+- ADR-0001: CircleCI Free = **PRIMARY** build authority; local Fedora Builder = **FALLBACK**
+- `.circleci/config.yml` with manual pipeline parameter `run_m04` (default `false`)
+- `scripts/run_m04_cloud.py` orchestrates existing Justfile/scripts
+- TCG + UEFI/OVMF supported on cloud when KVM absent (`RAVEN_CLOUD_BUILDER=1`)
+- Remote artifact policy: REVIEW ZIP only (no QCOW2/OCI/storage upload)
 
 ## Blockers
 
-**Executor host is Windows — not the Raven Builder:**
+**Next human/operator step (not yet executed):**
 
-- Not Linux x86_64
-- Podman unavailable
-- KVM unavailable
-- UEFI/OVMF not verifiable here
-- Base/BIB digests remain `pending` until Builder preflight PASS
+1. Open CircleCI and connect project `KayzenRoot/raven-os` on branch `main`
+2. Click **Set Up Project** (do not enable paid features/DLC)
+3. Run pipeline manually with `run_m04=true`
+4. Download REVIEW ZIP artifact after the job completes
 
-**Operator action:** provision/use Fedora Server 44 Builder VM per `docs/versions/v0.1/BUILDER-SETUP.md`, then run:
-
-```bash
-just builder-preflight
-just build-image
-just image-check
-just build-qcow2
-just artifact-metadata
-just boot-smoke
-just ci-image
-just review
-```
-
-Do not fabricate QCOW2, digest, or boot evidence on non-Builder hosts.
+Source branch remains **M04 BLOCKED** until Sol audits a successful cloud run.
 
 ## Decisions
 
-- Base: `quay.io/fedora/fedora-kinoite:44` (official; no silent fallback)
-- QCOW2 rootfs: `btrfs`
-- Podman storage strategy: `repo-local-containers-storage-conf` (`.build/containers/storage`)
-- Boot smoke: `q35` + OVMF pflash + serial log markers
-- Manifest digests updated only when Builder preflight PASS
+- See [ADR-0001](../../adr/0001-use-circleci-free-as-primary-v0.1-cloud-build-authority.md)
+- Preserve 002B Podman storage + UEFI/OVMF corrections
+- Base: `quay.io/fedora/fedora-kinoite:44` (no silent fallback)
 
 ## Validation evidence
 
-### Layer A (this host)
+### Layer A (local)
 
-- `just ci` — fast gates including new M04 contract tests
-- Review ZIP: `.review/RAVEN-OS-V0.1-INC-002-REVIEW.zip`
+- `just ci` — includes CircleCI/cloud contract tests
+- Pushed to `origin/main` after Prompt 002C
 
-### Layer B (Builder — required for M04 REVIEW)
+### Layer B (CircleCI cloud — required for M04 REVIEW)
 
-- Not executed here
-- Expected evidence paths: `.build/evidence/`, `.build/qcow2/` (gitignored)
+- Not executed yet
+- Expected: `.build/evidence/run-m04-cloud.json`, REVIEW ZIP artifact only
 
 ## Next step
 
-Execute Layer B on Raven Builder VM; regenerate INC-002 review ZIP with real OCI/QCOW2/UEFI boot evidence.
+Configure CircleCI project and trigger first manual M04 cloud pipeline (`run_m04=true`).
 
 ## DoD status summary
 
-V0.1 DoD success proof chain: not started (M05–M10). M04: **BLOCKED** pending Builder.
+V0.1 DoD success proof chain: not started (M05–M10). M04: **BLOCKED** pending first cloud Builder run.
 
 ## Backlog (future versions only)
 

@@ -1,6 +1,21 @@
-# Raven Builder setup — INC-002 / Prompt 002B
+# Raven Builder setup — INC-002 / Prompts 002B + 002C
 
-Authority environment for M04 Layer B: **Fedora Server 44 x86_64** local VM (zero-cost).
+## Primary authority (Prompt 002C)
+
+**CircleCI Free** Linux `machine` executor is the primary M04 build authority (see
+[ADR-0001](../../adr/0001-use-circleci-free-as-primary-v0.1-cloud-build-authority.md)).
+
+Manual pipeline only:
+
+1. Connect CircleCI project to `https://github.com/KayzenRoot/raven-os` branch `main`
+2. Set Up Project (no paid features, no DLC)
+3. Trigger pipeline with parameter **`run_m04=true`**
+4. Download REVIEW ZIP artifact from the job (QCOW2 is not uploaded)
+
+CircleCI config uses `ubuntu-2604:current`, `resource_class: medium`, and sets
+`RAVEN_CLOUD_BUILDER=1` for TCG fallback when KVM is absent.
+
+## Fallback: local Fedora Server 44 Builder
 
 ## Minimum VM profile
 

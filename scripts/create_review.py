@@ -81,6 +81,7 @@ INCLUDE_PATHS: tuple[str, ...] = (
     "uv.lock",
     "Containerfile",
     ".gitignore",
+    ".circleci/config.yml",
     "docs",
     "src",
     "scripts",
@@ -183,6 +184,7 @@ class ReviewContext:
     decisions: list[str] = field(default_factory=list)
     risks: list[str] = field(default_factory=list)
     files_created_changed: list[str] = field(default_factory=list)
+    cloud_result: str | None = None
 
 
 def resolve_repo_root(start: Path | None = None) -> Path:
@@ -419,15 +421,21 @@ Out-of-scope functionality added: **no**.
 
 def build_review_json(ctx: ReviewContext) -> dict[str, Any]:
     profile = ctx.profile
-    return {
+    modules = dict(profile["modules"])
+    handoff_status = profile["handoff_status"]
+    if ctx.cloud_result == "PASS_REVIEW_READY":
+        modules["M04"] = "REVIEW"
+        handoff_status = "REVIEW_CANDIDATE"
+    payload: dict[str, Any] = {
         "version": ctx.version,
         "increment": ctx.increment,
-        "status": profile["handoff_status"],
-        "modules": profile["modules"],
+        "status": handoff_status,
+        "source_branch_m04_status": "BLOCKED",
+        "modules": modules,
         "completed_points": profile["completed_points"],
         "version_progress_percent": profile["version_progress_percent"],
         "acceptance": "blocked_builder_required"
-        if profile["handoff_status"] == "BLOCKED"
+        if profile["handoff_status"] == "BLOCKED" and ctx.cloud_result != "PASS_REVIEW_READY"
         else "pending_sol_audit",
         "generated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "commands": [
@@ -440,6 +448,10 @@ def build_review_json(ctx: ReviewContext) -> dict[str, Any]:
         ],
         "scope_out_of_scope_added": False,
     }
+    if ctx.cloud_result:
+        payload["cloud_result"] = ctx.cloud_result
+        payload["builder_authority"] = "circleci-cloud"
+    return payload
 
 
 def write_evidence(ctx: ReviewContext) -> None:
@@ -531,7 +543,17 @@ def default_file_list(repo_root: Path, increment: str) -> list[str]:
         "tests/test_review_generator.py",
     ]
     if increment == "INC-002":
-        interesting.append("tests/test_m04_image_contracts.py")
+        interesting.extend(
+            [
+                "tests/test_m04_image_contracts.py",
+                "tests/test_circleci_config.py",
+                "tests/test_cloud_acceleration.py",
+                "scripts/run_m04_cloud.py",
+                "scripts/boot_smoke_qemu.py",
+                ".circleci/config.yml",
+                "docs/adr/0001-use-circleci-free-as-primary-v0.1-cloud-build-authority.md",
+            ]
+        )
     return [p for p in interesting if (repo_root / p).exists()]
 
 
@@ -541,6 +563,7 @@ def create_review(
     increment: str = DEFAULT_INCREMENT,
     run_quality: bool = True,
     skip_ci: bool = False,
+    cloud_result: str | None = None,
 ) -> Path:
     root = resolve_repo_root(repo_root)
     profile = increment_profile(increment)
@@ -564,7 +587,8 @@ def create_review(
             "QCOW2 root filesystem: btrfs via bootc-image-builder.",
             "Podman storage: repo-local graphroot via CONTAINERS_STORAGE_CONF (002B).",
             "Boot smoke: explicit UEFI/OVMF pflash (002B Sol audit correction).",
-            "Layer B image/QCOW2/boot proof deferred to Raven Builder (Windows host BLOCKED).",
+            "Primary build authority: CircleCI Free cloud (ADR-0001); local Builder fallback.",
+            "Heavy M04 workflow manual via run_m04=false default (002C).",
         ],
         risks=[
             (
@@ -577,7 +601,9 @@ def create_review(
             "002B: boot_smoke now uses explicit UEFI/OVMF pflash instead of implicit BIOS.",
             "002B: build/QCOW2/image-check share repo-local Podman graphroot for BIB visibility.",
             "002B: preflight blocks without OVMF firmware and records BIB digest when available.",
+            "002C: CircleCI Free cloud builder (manual run_m04) with TCG fallback on cloud.",
         ],
+        cloud_result=cloud_result,
     )
 
     quality_specs: list[tuple[str, list[str]]] = [

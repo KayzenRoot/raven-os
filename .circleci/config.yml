@@ -1,0 +1,62 @@
+version: 2.1
+
+parameters:
+  run_m04:
+    type: boolean
+    default: false
+
+jobs:
+  m04-cloud-build:
+    machine:
+      image: ubuntu-2604:current
+    resource_class: medium
+    environment:
+      RAVEN_CLOUD_BUILDER: "1"
+    steps:
+      - checkout
+      - run:
+          name: Install cloud Builder dependencies
+          command: |
+            set -euxo pipefail
+            sudo apt-get update
+            sudo apt-get install -y podman qemu-system-x86 ovmf qemu-utils git curl jq python3
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$BASH_ENV"
+            curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$HOME/.local/bin"
+      - run:
+          name: Sync Python environment
+          command: |
+            source "$BASH_ENV"
+            uv sync --extra dev
+      - run:
+          name: Run M04 cloud pipeline
+          no_output_timeout: 90m
+          command: |
+            source "$BASH_ENV"
+            export RAVEN_CLOUD_BUILDER=1
+            uv run python -m scripts.run_m04_cloud
+      - store_artifacts:
+          path: .review/RAVEN-OS-V0.1-INC-002-REVIEW.zip
+          destination: review
+          when: always
+      - run:
+          name: Finalize job status from cloud result
+          when: always
+          command: |
+            set -euo pipefail
+            source "$BASH_ENV"
+            python3 - <<'PY'
+            import json
+            from pathlib import Path
+            p = Path(".build/evidence/run-m04-cloud.json")
+            result = json.loads(p.read_text())["result"] if p.exists() else "FAILED"
+            print(f"cloud result: {result}")
+            if result != "PASS_REVIEW_READY":
+                raise SystemExit(1)
+            PY
+
+workflows:
+  m04-manual:
+    when: << pipeline.parameters.run_m04 >>
+    jobs:
+      - m04-cloud-build

@@ -23,8 +23,11 @@ Compact map of repository areas. Distinguishes **present** from **planned**.
 | `scripts/build_qcow2.py` | Present | bootc-image-builder QCOW2 path |
 | `scripts/image_check.py` | Present | OCI inspection / Raven labels |
 | `scripts/artifact_metadata.py` | Present | SHA-256 provenance metadata |
-| `scripts/boot_smoke.py` | Present | Bounded QEMU boot smoke (Builder) |
-| `.build/` | Generated (ignored) | `images/`, `qcow2/`, `evidence/` |
+| `scripts/boot_smoke.py` | Present | Bounded UEFI QEMU boot smoke (KVM or TCG) |
+| `scripts/boot_smoke_qemu.py` | Present | UEFI QEMU command builder (testable) |
+| `scripts/run_m04_cloud.py` | Present | CircleCI/cloud M04 gate orchestrator |
+| `.circleci/config.yml` | Present | Manual M04 cloud pipeline (`run_m04` default false) |
+| `.build/` | Generated (ignored) | `images/`, `qcow2/`, `evidence/`, Podman graphroot |
 
 ## Source packages (`src/`)
 
@@ -63,4 +66,4 @@ Compact map of repository areas. Distinguishes **present** from **planned**.
 
 - **Executor:** implements INC-* under frozen architecture; produces review evidence.
 - **Sol:** architecture freeze, ADR acceptance, module ACCEPTED, version completion.
-- **Builder authority:** local Fedora Server 44 Raven Builder VM for M04 Layer B image/QCOW2/boot proof.
+- **Builder authority:** CircleCI Free cloud (primary, ADR-0001); local Fedora Server 44 Builder VM (fallback).

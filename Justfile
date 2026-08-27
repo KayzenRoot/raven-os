@@ -43,8 +43,12 @@ artifact-metadata:
 boot-smoke:
     uv run python -m scripts.boot_smoke
 
-# Expensive real-image gates for Raven Builder (not part of fast ci)
+# Expensive real-image gates for Raven Builder / CircleCI (not part of fast ci)
 ci-image: builder-preflight build-image image-check build-qcow2 artifact-metadata boot-smoke
+
+# CircleCI/cloud orchestrator (sets RAVEN_CLOUD_BUILDER=1)
+run-m04-cloud:
+    uv run python -m scripts.run_m04_cloud
 
 review:
     uv run python scripts/create_review.py --increment INC-002

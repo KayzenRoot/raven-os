@@ -109,12 +109,15 @@ def test_required_m04_scripts_exist() -> None:
 
 
 def test_boot_smoke_requires_explicit_uefi_ovmf() -> None:
-    text = (SCRIPTS / "boot_smoke.py").read_text(encoding="utf-8")
-    assert "detect_uefi_firmware" in text
-    assert "if=pflash" in text
-    assert "OVMF" in text or "ovmf" in text.lower()
-    assert "-machine" in text
-    assert "q35" in text
+    smoke = (SCRIPTS / "boot_smoke.py").read_text(encoding="utf-8")
+    qemu = (SCRIPTS / "boot_smoke_qemu.py").read_text(encoding="utf-8")
+    assert "detect_uefi_firmware" in smoke
+    assert "build_qemu_uefi_command" in smoke
+    assert "if=pflash" in qemu
+    assert "UefiFirmware" in qemu
+    assert "-machine" in qemu
+    assert "q35" in qemu
+    assert "uefi-ovmf" in smoke
 
 
 def test_builder_preflight_checks_uefi_firmware() -> None:

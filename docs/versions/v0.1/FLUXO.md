@@ -45,7 +45,7 @@ Applied per Prompt 002 instruction from Sol (not executor self-acceptance):
 | Increment | Scope | Points | Status |
 |-----------|-------|-------:|--------|
 | INC-001 | M01 + M02 + M03 — repository bootstrap | 20 | ACCEPTED (Sol) |
-| INC-002 | M04 — bootc base image + QCOW2 build path | 12 | BLOCKED — Builder action required |
+| INC-002 | M04 — bootc base image + QCOW2 build path | 12 | BLOCKED — CircleCI setup + first cloud run pending |
 | INC-003 | Placeholder — future Sol-scoped increment | — | PLANNED |
 | INC-004 | Placeholder — future Sol-scoped increment | — | PLANNED |
 | INC-005 | Placeholder — future Sol-scoped increment | — | PLANNED |

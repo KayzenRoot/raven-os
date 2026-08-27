@@ -9,6 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from scripts.boot_smoke_qemu import build_qemu_uefi_command
 from scripts.raven_build_config import (
     build_paths,
     command_exists,
@@ -16,6 +17,7 @@ from scripts.raven_build_config import (
     ensure_within_build_root,
     is_linux_x86_64,
     platform_summary,
+    resolve_acceleration,
 )
 
 
@@ -50,29 +52,13 @@ def boot_smoke(repo_root: Path | None = None, timeout_seconds: int = 120) -> int
     if serial_log.exists():
         serial_log.unlink()
 
-    accel = "kvm" if Path("/dev/kvm").exists() else "tcg"
-    command = [
-        "qemu-system-x86_64",
-        "-machine",
-        f"q35,accel={accel}",
-        "-cpu",
-        "host" if accel == "kvm" else "max",
-        "-m",
-        "4096",
-        "-smp",
-        "2",
-        "-drive",
-        f"if=pflash,format=raw,readonly=on,file={firmware.code_path}",
-        "-drive",
-        f"if=pflash,format=raw,file={firmware.vars_runtime_path}",
-        "-drive",
-        f"file={qcow2},format=qcow2,if=virtio",
-        "-serial",
-        f"file:{serial_log}",
-        "-display",
-        "none",
-        "-no-reboot",
-    ]
+    accel = resolve_acceleration()
+    command = build_qemu_uefi_command(
+        qcow2=qcow2,
+        firmware=firmware,
+        serial_log=serial_log,
+        acceleration=accel,
+    )
 
     timed_out = False
     exit_code = 0
@@ -141,7 +127,9 @@ def boot_smoke(repo_root: Path | None = None, timeout_seconds: int = 120) -> int
         )
         return 1
 
-    print("boot-smoke: PASS (bounded UEFI/OVMF serial boot markers observed)")
+    print(
+        f"boot-smoke: PASS (bounded UEFI/OVMF serial boot markers observed; acceleration={accel})"
+    )
     return 0
 
 
