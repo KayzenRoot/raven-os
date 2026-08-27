@@ -114,15 +114,32 @@ def ensure_podman_storage(paths: BuildPaths) -> Path:
     return paths.podman_storage_conf
 
 
+def ensure_cloud_containers_conf(paths: BuildPaths) -> Path:
+    conf_path = paths.containers_dir / "containers.conf"
+    conf_path.write_text(
+        "[engine]\n"
+        'cgroup_manager = "cgroupfs"\n'
+        'events_logger = "file"\n',
+        encoding="utf-8",
+    )
+    return conf_path
+
+
 def resolve_podman_context(paths: BuildPaths) -> PodmanContext:
     ensure_podman_storage(paths)
     env = os.environ.copy()
     env["CONTAINERS_STORAGE_CONF"] = str(paths.podman_storage_conf.resolve())
+    strategy = PODMAN_STORAGE_STRATEGY
+    if is_cloud_builder():
+        containers_conf = ensure_cloud_containers_conf(paths)
+        env["CONTAINERS_CONF"] = str(containers_conf.resolve())
+        env["BUILDAH_ISOLATION"] = "chroot"
+        strategy = f"{PODMAN_STORAGE_STRATEGY}+cloud-cgroupfs"
     return PodmanContext(
         command_prefix=("podman",),
         env=env,
         storage_mount_path=str(paths.podman_graphroot.resolve()),
-        strategy=PODMAN_STORAGE_STRATEGY,
+        strategy=strategy,
     )
 
 
