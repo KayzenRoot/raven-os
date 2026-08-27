@@ -131,6 +131,10 @@ def test_build_scripts_share_repo_local_podman_storage() -> None:
     for name in ("build_image.py", "build_qcow2.py", "image_check.py"):
         text = (SCRIPTS / name).read_text(encoding="utf-8")
         assert "resolve_podman_context" in text
+        assert "write_podman_storage_evidence" in text or name == "image_check.py"
+    config = (SCRIPTS / "raven_build_config.py").read_text(encoding="utf-8")
+    assert PODMAN_STORAGE_STRATEGY in config
+    assert "CONTAINERS_STORAGE_CONF" in config
 
 
 def test_cloud_podman_context_uses_cgroupfs(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -143,10 +147,6 @@ def test_cloud_podman_context_uses_cgroupfs(monkeypatch: pytest.MonkeyPatch) -> 
     assert "cloud-cgroupfs" in ctx.strategy
     conf_text = Path(ctx.env["CONTAINERS_CONF"]).read_text(encoding="utf-8")
     assert 'cgroup_manager = "cgroupfs"' in conf_text
-        assert "write_podman_storage_evidence" in text or name == "image_check.py"
-    config = (SCRIPTS / "raven_build_config.py").read_text(encoding="utf-8")
-    assert PODMAN_STORAGE_STRATEGY in config
-    assert "CONTAINERS_STORAGE_CONF" in config
 
 
 def test_build_qcow2_mounts_repo_graphroot_for_bootc_image_builder() -> None:
