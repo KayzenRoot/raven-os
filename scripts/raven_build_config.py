@@ -26,8 +26,17 @@ PODMAN_STORAGE_STRATEGY = "repo-local-containers-storage-conf"
 OVMF_FIRMWARE_CANDIDATES: tuple[tuple[str, str], ...] = (
     ("/usr/share/edk2/ovmf/OVMF_CODE.secboot.fd", "/usr/share/edk2/ovmf/OVMF_VARS.secboot.fd"),
     ("/usr/share/OVMF/OVMF_CODE.secboot.fd", "/usr/share/OVMF/OVMF_VARS.secboot.fd"),
+    ("/usr/share/OVMF/OVMF_CODE_4M.secboot.fd", "/usr/share/OVMF/OVMF_VARS_4M.secboot.fd"),
+    ("/usr/share/OVMF/OVMF_CODE_4M.fd", "/usr/share/OVMF/OVMF_VARS_4M.fd"),
     ("/usr/share/edk2/ovmf/OVMF_CODE.fd", "/usr/share/edk2/ovmf/OVMF_VARS.fd"),
     ("/usr/share/qemu/OVMF_CODE.fd", "/usr/share/qemu/OVMF_VARS.fd"),
+    ("/usr/share/edk2/OVMF_CODE.fd", "/usr/share/edk2/OVMF_VARS.fd"),
+)
+
+OVMF_SEARCH_DIRS: tuple[str, ...] = (
+    "/usr/share/OVMF",
+    "/usr/share/edk2/ovmf",
+    "/usr/share/edk2-ovmf",
 )
 
 
@@ -190,11 +199,33 @@ def update_manifest_verified_digests(
         )
 
 
+def iter_ovmf_firmware_candidates() -> list[tuple[Path, Path]]:
+    seen: set[tuple[str, str]] = set()
+    pairs: list[tuple[Path, Path]] = []
+    for code_str, vars_str in OVMF_FIRMWARE_CANDIDATES:
+        key = (code_str, vars_str)
+        if key in seen:
+            continue
+        seen.add(key)
+        pairs.append((Path(code_str), Path(vars_str)))
+    for directory_str in OVMF_SEARCH_DIRS:
+        directory = Path(directory_str)
+        if not directory.is_dir():
+            continue
+        for code in sorted(directory.glob("OVMF_CODE*.fd")):
+            suffix = code.name.removeprefix("OVMF_CODE")
+            vars_template = directory / f"OVMF_VARS{suffix}"
+            key = (str(code), str(vars_template))
+            if key in seen:
+                continue
+            seen.add(key)
+            pairs.append((code, vars_template))
+    return pairs
+
+
 def detect_uefi_firmware(evidence_dir: Path) -> UefiFirmware | None:
     evidence_dir.mkdir(parents=True, exist_ok=True)
-    for code_str, vars_str in OVMF_FIRMWARE_CANDIDATES:
-        code = Path(code_str)
-        vars_template = Path(vars_str)
+    for code, vars_template in iter_ovmf_firmware_candidates():
         if code.is_file() and vars_template.is_file():
             runtime_vars = evidence_dir / "OVMF_VARS.runtime.fd"
             shutil.copy2(vars_template, runtime_vars)

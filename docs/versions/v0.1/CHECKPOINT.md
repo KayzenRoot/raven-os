@@ -18,7 +18,14 @@ Per Prompt 002 instruction from Sol (not executor self-acceptance):
 
 ## Current scope
 
-INC-002 / Prompt 002C-R1 — CircleCI config parse fix pushed; re-trigger manual `run_m04=true` pending.
+INC-002 / Prompt 002C-R2 — CLI authenticated; failed run `a5b7d183` diagnosed (OVMF path gap on Ubuntu); fix in flight.
+
+## CircleCI CLI ops (002C-R2)
+
+- CircleCI CLI **v1.0.48840**; auth **PASS** (`KayzenRoot`); project linked (`gh/KayzenRoot/raven-os`)
+- Failed run evidence: `a5b7d183-3a1b-41cd-89cc-b2c84352b44b` / job `0f66ca30-632c-41fa-b5a8-f80f5f3e32d6`
+- Root cause: `builder-preflight` BLOCKED — **UEFI/OVMF firmware unavailable** (Ubuntu `OVMF_CODE_4M*.fd` paths missing from detector)
+- Fix: expand OVMF candidate paths + `/usr/share/OVMF` discovery in `raven_build_config.py`
 
 ## Completed (Sol-accepted)
 
@@ -30,7 +37,7 @@ INC-002 / Prompt 002C-R1 — CircleCI config parse fix pushed; re-trigger manual
 
 | Item | Status |
 |------|--------|
-| INC-002 / M04 | **BLOCKED** — real cloud failure undiagnosed; complete `circleci auth login` then inspect latest failed run |
+| INC-002 / M04 | **BLOCKED** — OVMF detection fix pushed; cloud retry pending |
 
 ## Prompt 002C infrastructure change (applied in source)
 

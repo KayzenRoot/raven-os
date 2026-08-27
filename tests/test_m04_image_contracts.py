@@ -6,6 +6,7 @@ import re
 import tomllib
 from pathlib import Path
 
+import pytest
 from scripts.raven_build_config import (
     OVMF_FIRMWARE_CANDIDATES,
     PODMAN_STORAGE_STRATEGY,
@@ -160,3 +161,23 @@ def test_ovmf_candidate_list_is_non_empty() -> None:
 
 def test_detect_uefi_firmware_returns_none_when_firmware_missing(tmp_path: Path) -> None:
     assert detect_uefi_firmware(tmp_path / "evidence") is None
+
+
+def test_detect_uefi_firmware_discovers_dynamic_ovmf_pair(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    share = tmp_path / "share" / "OVMF"
+    share.mkdir(parents=True)
+    (share / "OVMF_CODE_4M.secboot.fd").write_bytes(b"code")
+    (share / "OVMF_VARS_4M.secboot.fd").write_bytes(b"vars")
+    monkeypatch.setattr("scripts.raven_build_config.OVMF_FIRMWARE_CANDIDATES", ())
+    monkeypatch.setattr("scripts.raven_build_config.OVMF_SEARCH_DIRS", (str(share),))
+    firmware = detect_uefi_firmware(tmp_path / "evidence")
+    assert firmware is not None
+    assert firmware.code_path.name == "OVMF_CODE_4M.secboot.fd"
+
+
+def test_ovmf_candidates_include_ubuntu_4m_paths() -> None:
+    joined = " ".join(f"{code} {vars_}" for code, vars_ in OVMF_FIRMWARE_CANDIDATES)
+    assert "OVMF_CODE_4M.secboot.fd" in joined
+    assert "OVMF_VARS_4M.secboot.fd" in joined
