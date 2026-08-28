@@ -43,6 +43,22 @@ def image_check(repo_root: Path | None = None) -> int:
     ctx = resolve_podman_context(paths)
     write_podman_storage_evidence(paths, ctx)
 
+    log_driver_out = run_podman(
+        ctx,
+        ["info", "--format", "{{ .Host.LogDriver }}"],
+        paths.repo_root,
+    )
+    if log_driver_out.returncode != 0:
+        print(log_driver_out.stderr or log_driver_out.stdout, file=sys.stderr)
+        return int(log_driver_out.returncode)
+    effective_log_driver = (log_driver_out.stdout or "").strip()
+    if effective_log_driver != "k8s-file":
+        print(
+            f"error: podman effective log driver is {effective_log_driver!r}, expected 'k8s-file'",
+            file=sys.stderr,
+        )
+        return 1
+
     exists = run_podman(ctx, ["image", "exists", local_tag], paths.repo_root)
     if exists.returncode != 0:
         print(
@@ -65,6 +81,7 @@ def image_check(repo_root: Path | None = None) -> int:
         "architecture": data.get("Architecture", ""),
         "podman_storage_strategy": ctx.strategy,
         "podman_graphroot": str(paths.podman_graphroot),
+        "podman_log_driver": effective_log_driver,
     }
 
     required_label_keys = ("io.raven.os.version", "io.raven.os.variant")
@@ -73,11 +90,8 @@ def image_check(repo_root: Path | None = None) -> int:
         print(f"error: missing Raven labels: {missing}", file=sys.stderr)
         return 1
 
-    version_out = run_podman(
-        ctx,
-        ["run", "--rm", local_tag, "cat", "/usr/lib/raven/version"],
-        paths.repo_root,
-    )
+    run_args = ["run", "--rm", "--log-driver=k8s-file", local_tag, "cat", "/usr/lib/raven/version"]
+    version_out = run_podman(ctx, run_args, paths.repo_root)
     if version_out.returncode != 0:
         print(version_out.stderr or version_out.stdout, file=sys.stderr)
         return int(version_out.returncode)

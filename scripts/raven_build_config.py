@@ -130,10 +130,22 @@ def ensure_podman_storage(paths: BuildPaths) -> Path:
 def ensure_cloud_containers_conf(paths: BuildPaths) -> Path:
     conf_path = paths.containers_dir / "containers.conf"
     conf_path.write_text(
-        '[engine]\ncgroup_manager = "cgroupfs"\nevents_logger = "file"\nruntime = "crun"\n',
+        "[containers]\n"
+        'log_driver = "k8s-file"\n'
+        "[engine]\n"
+        'cgroup_manager = "cgroupfs"\n'
+        'events_logger = "file"\n'
+        'runtime = "crun"\n',
         encoding="utf-8",
     )
     return conf_path
+
+
+def load_cloud_containers_conf(paths: BuildPaths) -> dict[str, Any]:
+    """Parse Raven-owned cloud containers.conf (stdlib tomllib)."""
+    conf_path = ensure_cloud_containers_conf(paths)
+    with conf_path.open("rb") as handle:
+        return tomllib.load(handle)
 
 
 def resolve_podman_context(paths: BuildPaths) -> PodmanContext:

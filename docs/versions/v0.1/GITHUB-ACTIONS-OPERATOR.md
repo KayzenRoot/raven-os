@@ -80,7 +80,8 @@ Validate `RAVEN-OS-V0.1-INC-002-REVIEW.zip` is non-zero, contains no QCOW2, and 
 
 ## Retry budget
 
-- Maximum **2** new heavy attempts per prompt/increment without Sol re-scope
+- Prompt 002E: maximum **2** heavy attempts — **exhausted** (runs `33191087333`, `33191467126`)
+- Prompt 002E-R1: **2 NEW** heavy attempts authorized (fresh correction budget for journald/conmon log driver)
 - One run at a time; fix evidence-backed issues before retry
 - Run `just ci` locally before retry
 - Never move to paid/larger runners

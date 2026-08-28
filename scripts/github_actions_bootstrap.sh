@@ -131,6 +131,12 @@ fi
 
 log "podman: $(command -v podman)"
 podman --version || true
+if command -v conmon >/dev/null 2>&1; then
+  log "conmon: $(conmon --version 2>&1 | head -n 1 || true)"
+fi
+if command -v crun >/dev/null 2>&1; then
+  log "crun: $(crun --version 2>&1 | head -n 1 || true)"
+fi
 log "qemu: $(command -v qemu-system-x86_64)"
 qemu-system-x86_64 --version | head -n 1 || true
 log "uv: $(command -v uv)"

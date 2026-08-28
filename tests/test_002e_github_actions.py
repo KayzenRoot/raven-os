@@ -105,6 +105,8 @@ def test_github_actions_bootstrap_script_exists() -> None:
         assert token in text
     assert "BLOCKED - STANDARD GITHUB RUNNER DISK CAPACITY" in text
     assert "passwordless sudo" in text
+    assert "conmon" in text
+    assert "crun" in text
 
 
 def test_cirrus_operational_path_retired() -> None:

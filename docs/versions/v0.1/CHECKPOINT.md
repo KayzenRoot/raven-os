@@ -2,7 +2,7 @@
 
 - **STATUS:** IN PROGRESS
 - **VERSION:** V0.1
-- **PHASE:** Image Foundation (M04) — Prompt 002E GitHub Actions public M04 builder
+- **PHASE:** Image Foundation (M04) — Prompt 002E-R1 Podman k8s-file log driver fix
 - **OBJECTIVE:** Deliver a small VM Cognitive Seed (local-first cognitive Linux OS seed), not the full long-term product.
 - **VERSION PROGRESS:** 20% (20/100 Sol-accepted points; M04 pending real Builder Layer B)
 - **COMPLETED POINTS:** 20
@@ -50,16 +50,17 @@ Points stay 20 / 20%.
 ## Blockers
 
 M04 Layer B (real QCOW2 + UEFI boot smoke) has not yet passed on GitHub Actions.
-Attempt 2 reached `image-check` then failed with Podman `conmon` runtime error on the
-standard runner. Retry budget for Prompt 002E is exhausted (2/2). A `crun` runtime fix
-is committed for Sol follow-up. CircleCI heavy M04 stays disabled. Do not start M05.
+Attempt 2 (run `33191467126`) reached `image-check` then failed with Podman `conmon`
+journald log-driver error on the standard runner (exit 126). Prompt 002E-R1 applies a
+`k8s-file` container log driver fix in Raven cloud `containers.conf`. CircleCI heavy
+M04 stays disabled. Do not start M05.
 
 ## Next step
 
-Sol follow-up: re-trigger M04 after reviewing the `crun` runtime fix
-(`gh workflow run m04.yml --ref main -f confirm_m04=true`). Attempts 1–2 failed
-(preflight/podman path, then `image-check` conmon). M04 stays **BLOCKED** until Layer B
-evidence exists and Sol audits the REVIEW ZIP.
+Executor: trigger M04 Run 1 after 002E-R1 push (`gh workflow run m04.yml --ref main
+-f confirm_m04=true`). Prior attempts 1–2 failed (preflight/podman path, then
+`image-check` conmon/journald). M04 stays **BLOCKED** until Layer B evidence exists
+and Sol audits the REVIEW ZIP.
 
 ## Decisions
 

@@ -12,7 +12,9 @@ from scripts.raven_build_config import (
     PODMAN_STORAGE_STRATEGY,
     build_paths,
     detect_uefi_firmware,
+    ensure_cloud_containers_conf,
     ensure_within_build_root,
+    load_cloud_containers_conf,
     podman_command,
     resolve_podman_context,
 )
@@ -154,10 +156,41 @@ def test_cloud_podman_context_uses_cgroupfs(monkeypatch: pytest.MonkeyPatch) -> 
     assert 'graphroot = "/var/lib/containers/storage"' in conf_text
     engine_conf = Path(ctx.env["CONTAINERS_CONF"]).read_text(encoding="utf-8")
     assert 'cgroup_manager = "cgroupfs"' in engine_conf
+    assert 'log_driver = "k8s-file"' in engine_conf
+    assert 'events_logger = "file"' in engine_conf
+    assert 'runtime = "crun"' in engine_conf
     cmd = podman_command(ctx, "version")
     assert cmd[:2] == ["sudo", "env"]
     assert any(item.startswith("CONTAINERS_STORAGE_CONF=") for item in cmd)
+    assert any(item.startswith("CONTAINERS_CONF=") for item in cmd)
     assert "podman" in cmd
+
+
+def test_cloud_containers_conf_is_valid_toml_with_k8s_file_log_driver(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("RAVEN_CLOUD_BUILDER", "1")
+    paths = build_paths(ROOT)
+    conf = load_cloud_containers_conf(paths)
+    assert "containers" in conf
+    assert conf["containers"]["log_driver"] == "k8s-file"
+    assert conf["engine"]["events_logger"] == "file"
+    assert conf["engine"]["cgroup_manager"] == "cgroupfs"
+    assert conf["engine"]["runtime"] == "crun"
+    conf_path = ensure_cloud_containers_conf(paths)
+    parsed = tomllib.loads(conf_path.read_text(encoding="utf-8"))
+    assert parsed == conf
+
+
+def test_image_check_verifies_log_driver_and_uses_real_container() -> None:
+    text = (SCRIPTS / "image_check.py").read_text(encoding="utf-8")
+    assert "podman info" not in text.lower()
+    assert '["info", "--format", "{{ .Host.LogDriver }}"' in text
+    assert "podman_log_driver" in text
+    assert '"k8s-file"' in text
+    assert "--log-driver=k8s-file" in text
+    assert "|| true" not in text
+    assert "run_podman" in text
 
 
 def test_build_qcow2_uses_current_image_builder_cli() -> None:
