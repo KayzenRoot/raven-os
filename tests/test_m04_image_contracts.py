@@ -144,7 +144,8 @@ def test_cloud_podman_context_uses_cgroupfs(monkeypatch: pytest.MonkeyPatch) -> 
     assert "CONTAINERS_CONF" in ctx.env
     assert "BUILDAH_ISOLATION" in ctx.env
     assert ctx.env["BUILDAH_ISOLATION"] == "chroot"
-    assert "cloud-cgroupfs" in ctx.strategy
+    assert ctx.command_prefix == ("sudo", "-E", "podman")
+    assert "cloud-rootful-sudo" in ctx.strategy
     conf_text = Path(ctx.env["CONTAINERS_CONF"]).read_text(encoding="utf-8")
     assert 'cgroup_manager = "cgroupfs"' in conf_text
 
