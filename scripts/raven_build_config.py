@@ -128,15 +128,13 @@ def resolve_podman_context(paths: BuildPaths) -> PodmanContext:
     env = os.environ.copy()
     env["CONTAINERS_STORAGE_CONF"] = str(paths.podman_storage_conf.resolve())
     strategy = PODMAN_STORAGE_STRATEGY
-    command_prefix: tuple[str, ...] = ("podman",)
     if is_cloud_builder():
         containers_conf = ensure_cloud_containers_conf(paths)
         env["CONTAINERS_CONF"] = str(containers_conf.resolve())
         env["BUILDAH_ISOLATION"] = "chroot"
-        command_prefix = ("sudo", "-E", "podman")
         strategy = f"{PODMAN_STORAGE_STRATEGY}+cloud-rootful-sudo+cgroupfs"
     return PodmanContext(
-        command_prefix=command_prefix,
+        command_prefix=("podman",),
         env=env,
         storage_mount_path=str(paths.podman_graphroot.resolve()),
         strategy=strategy,
@@ -144,6 +142,13 @@ def resolve_podman_context(paths: BuildPaths) -> PodmanContext:
 
 
 def podman_command(ctx: PodmanContext, *args: str) -> list[str]:
+    if "cloud-rootful-sudo" in ctx.strategy:
+        env_pairs: list[str] = []
+        for key in ("CONTAINERS_STORAGE_CONF", "CONTAINERS_CONF", "BUILDAH_ISOLATION"):
+            value = ctx.env.get(key)
+            if value:
+                env_pairs.append(f"{key}={value}")
+        return ["sudo", "env", *env_pairs, "podman", *args]
     return [*ctx.command_prefix, *args]
 
 
