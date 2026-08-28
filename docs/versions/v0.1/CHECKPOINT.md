@@ -2,7 +2,7 @@
 
 - **STATUS:** IN PROGRESS
 - **VERSION:** V0.1
-- **PHASE:** Image Foundation (M04) — Prompt 002E-R1 k8s-file fix applied; boot-smoke TCG follow-up
+- **PHASE:** Image Foundation (M04) — Prompt 002E-R1 exhausted; boot-smoke UEFI serial gap
 - **OBJECTIVE:** Deliver a small VM Cognitive Seed (local-first cognitive Linux OS seed), not the full long-term product.
 - **VERSION PROGRESS:** 20% (20/100 Sol-accepted points; M04 pending real Builder Layer B)
 - **COMPLETED POINTS:** 20
@@ -57,18 +57,21 @@ GitHub M04 attempt history on `main`:
 | `33191087333` | `ce093ec`/`f462879` | FAIL (~2m) | `builder-preflight` / podman path |
 | `33191467126` | `f462879` | FAIL (~11m) | `image-check` — conmon journald log driver |
 | `33192739565` | `0e3d57e` (crun only) | FAIL (~11m) | `image-check` — same conmon/journald error |
-| `33193783890` | `1f603e8` (002E-R1) | FAIL (~18m) | `boot-smoke` — UEFI serial markers not observed |
+| `33193783890` | `1f603e8` (002E-R1 #1) | FAIL (~18m) | `boot-smoke` — UEFI serial markers not observed (KVM) |
+| `33195816360` | `d2439ab` (002E-R1 #2) | FAIL (~19m) | `boot-smoke` — same; TCG in 0.14s, no serial markers |
 
-Run `33193783890` (`1f603e8`, 002E-R1 `k8s-file`) cleared `image-check`; failed
-`boot-smoke` in 0.12s (KVM selected despite unusable nested virt on GHA). Follow-up:
-force TCG acceleration on cloud builder + 300s boot-smoke timeout.
+Run `33193783890` (`1f603e8`, 002E-R1 `k8s-file`) cleared `image-check`. Both
+002E-R1 attempts failed `boot-smoke` (KVM ~18m then TCG ~0.14s; no UEFI serial
+markers). Prompt 002E-R1 heavy retry budget **exhausted (2/2)**. Do not trigger
+another GHA M04 run without Sol authorization.
 CircleCI heavy M04 stays disabled. Do not start M05.
 
 ## Next step
 
-Executor: trigger M04 Run 2 after boot-smoke TCG push (`gh workflow run m04.yml
---ref main -f confirm_m04=true`). M04 stays **BLOCKED** until Layer B passes and
-Sol audits the REVIEW ZIP.
+Sol: audit boot-smoke evidence from runs `33193783890` and `33195816360`
+(`.build/evidence/boot-smoke*.log/json` in GHA dumps). Decide whether a new
+prompt authorizes further heavy attempts or an ADR-level boot-smoke change.
+M04 stays **BLOCKED** until Layer B passes and Sol audits the REVIEW ZIP.
 
 ## Decisions
 
@@ -85,15 +88,11 @@ Sol audits the REVIEW ZIP.
 
 ### Layer B (real QCOW2 + UEFI boot)
 
-- GHA run `33193783890` (`1f603e8`): `image-check` passed; `boot-smoke` failed
-  (UEFI serial markers not observed). Layer B not yet proven.
-- Attempt 4 `boot-smoke` evidence (from GHA log + `scripts/boot_smoke.py`):
-  - Serial log path: `.build/evidence/boot-smoke-serial.log`
-  - Expected markers (any one): `Fedora`, `systemd`, `Linux version`, `Kinoite`, `EFI`
-  - Observed markers: **none** (exit 1 after 120s bounded QEMU run)
-  - QEMU/OVMF: `q35` + OVMF pflash code/vars + virtio QCOW2 + `-serial file:` +
-    `-display none` + `-no-reboot`; acceleration `tcg` on GHA (no `/dev/kvm`)
-  - No run artifacts uploaded (failed before REVIEW ZIP)
+- GHA run `33193783890` (`1f603e8`): all gates through `artifact-metadata` passed;
+  `image-check` ok; `boot-smoke` failed (KVM, no serial markers).
+- GHA run `33195816360` (`d2439ab`): same gate pass pattern; `boot-smoke` failed
+  again (TCG, 0.14s, acceleration `tcg`, no serial markers).
+- Layer B not yet proven. No REVIEW ZIP uploaded (failed before artifact step).
 
 ## DoD status summary
 
