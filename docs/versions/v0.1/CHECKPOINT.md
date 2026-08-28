@@ -52,6 +52,21 @@ passes on cloud Cirrus and Sol audits the REVIEW ZIP. Points stay 20 / 20%.
 M04 Layer B (real QCOW2 + UEFI boot smoke) has not yet passed on Cirrus.
 CircleCI heavy M04 stays disabled. Do not start M05.
 
+Cirrus GitHub App is installed (id `157274806`). Push `e8a669a` created an empty
+GitHub Check Suite `89940580996` (`cirrus-ci`, status queued, **0 check-runs**,
+`updated_at` unchanged). REST rerequest returned 404; GraphQL `rerequestCheckSuite`
+is GitHub-App-only. This host can TCP to `34.117.12.6:443` but TLS handshake
+fails (`curl 35` / Python `SSLEOFError`) for `https://api.cirrus-ci.com` and
+`https://cirrus-ci.com`. Manual `m04-cirrus-builder` was **not** started.
+
+## Next step
+
+Reach Cirrus GraphQL from a network that can complete TLS to `api.cirrus-ci.com`
+(VPN off this ISP). Then trigger **one** `m04-cirrus-builder`. Watch GitHub Checks
+on `e8a669a` (do not require opening cirrus-ci.com in the human browser).
+Do not trigger CircleCI M04. Do not start M05. M04 stays **BLOCKED** until
+Layer B evidence exists.
+
 ## Decisions
 
 - See [ADR-0002](../../adr/0002-migrate-disk-image-builds-to-osbuild-image-builder.md)
@@ -68,12 +83,6 @@ CircleCI heavy M04 stays disabled. Do not start M05.
 ### Layer B (real QCOW2 + UEFI boot)
 
 - Not yet proven on Cirrus in this increment
-
-## Next step
-
-Trigger **one** manual `m04-cirrus-builder` (Cirrus App already installed).
-Do not trigger CircleCI M04. Do not start M05. M04 stays **BLOCKED** until
-Layer B evidence exists.
 
 ## DoD status summary
 
