@@ -48,6 +48,17 @@ jobs:
       - name: Run M04 cloud gates
         run: just run-m04-cloud
 
+      - name: Dump M04 evidence on failure
+        if: failure()
+        run: |
+          find .build/evidence -type f 2>/dev/null | head -n 40
+          for f in .build/evidence/cloud-gate-*.txt .build/evidence/builder-preflight.txt; do
+            if [ -f "$f" ]; then
+              echo "===== ${f} ====="
+              tail -n 80 "$f"
+            fi
+          done || true
+
       - name: Finalize cloud result
         run: uv run python -m scripts.finalize_cloud_result
 

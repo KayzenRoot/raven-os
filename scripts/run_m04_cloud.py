@@ -116,6 +116,7 @@ def run_m04_cloud(repo_root: Path | None = None) -> dict[str, Any]:
         )
         if result.exit_code != 0:
             overall = RESULT_BLOCKED if result.exit_code == 2 else RESULT_FAILED
+            print(result.output, end="")
             break
 
     review_ready = overall == RESULT_PASS

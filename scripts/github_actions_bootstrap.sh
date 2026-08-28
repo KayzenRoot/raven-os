@@ -105,6 +105,12 @@ sudo apt-get install -y \
   uidmap
 sudo apt-get install -y cpu-checker || true
 
+# Prefer distribution Podman over any preinstalled /usr/local/bin copy on GitHub runners.
+export PATH="/usr/bin:/usr/sbin:${PATH}"
+if command -v podman >/dev/null 2>&1; then
+  sudo ln -sf "$(command -v podman)" /usr/local/bin/podman
+fi
+
 if [[ -e /dev/kvm ]]; then
   sudo chmod a+rw /dev/kvm || true
   log "KVM_PRESENT=1"
