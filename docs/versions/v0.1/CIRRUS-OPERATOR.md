@@ -68,6 +68,11 @@ Cirrus uploads only:
 Download it locally into `.review/` (gitignored). Verify SHA-256 before Sol audit.
 A green Cirrus job does **not** accept M04.
 
+## GitHub App status
+
+Cirrus CI GitHub App is installed for `KayzenRoot/raven-os` only
+(installation id `157274806`). Do not add payment. Do not broaden the install.
+
 ## If Cirrus is not authorized
 
 Stop with `HUMAN_CIRRUS_AUTH_REQUIRED`. Do not create a repository secret solely

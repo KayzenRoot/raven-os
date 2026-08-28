@@ -20,8 +20,10 @@ Per Prompt 002 instruction from Sol (not executor self-acceptance):
 
 INC-002 / Prompt 002D — CircleCI rejected as M04 disk-image authority; image-builder
 tooling migrated; Cirrus `.cirrus.yml` added after `KayzenRoot/raven-os` became
-**PUBLIC**. M04 remains **BLOCKED** until a real QCOW2 + UEFI boot passes and Sol
-audits the REVIEW ZIP.
+**PUBLIC**. GitHub App **Cirrus CI** is installed for this repository only
+(installation id `157274806`; installed after `c8d5189`, so that SHA has no
+Cirrus check-runs). M04 remains **BLOCKED** until a real QCOW2 + UEFI boot
+passes on cloud Cirrus and Sol audits the REVIEW ZIP. Points stay 20 / 20%.
 
 ## Completed (Sol-accepted)
 
@@ -33,7 +35,7 @@ audits the REVIEW ZIP.
 
 | Item | Status |
 |------|--------|
-| INC-002 / M04 | **BLOCKED** — Cirrus config present; Layer B (QCOW2 + boot) not yet proven |
+| INC-002 / M04 | **BLOCKED** — Cirrus App installed; Layer B (QCOW2 + boot) not yet proven |
 
 ## Prompt 002D infrastructure change (applied in source)
 
@@ -43,6 +45,7 @@ audits the REVIEW ZIP.
 - Evidence: [CIRCLECI-M04-BLOCKER.md](CIRCLECI-M04-BLOCKER.md)
 - `.cirrus.yml`: manual `m04-cirrus-builder` + execution lock; REVIEW ZIP only
 - Operator: [CIRRUS-OPERATOR.md](CIRRUS-OPERATOR.md)
+- GitHub App Cirrus CI authorized for `KayzenRoot/raven-os` only (id `157274806`)
 
 ## Blockers
 
@@ -68,8 +71,9 @@ CircleCI heavy M04 stays disabled. Do not start M05.
 
 ## Next step
 
-Authorize Cirrus GitHub App for `KayzenRoot/raven-os` if needed, then trigger
-**one** manual `m04-cirrus-builder`. Do not trigger CircleCI M04. Do not start M05.
+Trigger **one** manual `m04-cirrus-builder` (Cirrus App already installed).
+Do not trigger CircleCI M04. Do not start M05. M04 stays **BLOCKED** until
+Layer B evidence exists.
 
 ## DoD status summary
 
