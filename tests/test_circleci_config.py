@@ -75,6 +75,16 @@ def test_run_m04_cloud_orchestrator_exists() -> None:
     assert "boot-smoke" in text
 
 
+def test_run_m04_cloud_ci_gate_omits_cloud_builder_env() -> None:
+    from scripts.run_m04_cloud import gate_environment
+
+    base = {"RAVEN_CLOUD_BUILDER": "1", "PATH": "/usr/bin"}
+    ci_env = gate_environment("ci", base)
+    assert "RAVEN_CLOUD_BUILDER" not in ci_env
+    preflight_env = gate_environment("builder-preflight", base)
+    assert preflight_env["RAVEN_CLOUD_BUILDER"] == "1"
+
+
 def test_circleci_finalizes_via_repository_script() -> None:
     text = CIRCLECI_CONFIG.read_text(encoding="utf-8")
     assert "scripts.finalize_cloud_result" in text

@@ -155,7 +155,10 @@ def test_build_qcow2_mounts_repo_graphroot_for_bootc_image_builder() -> None:
     assert "/var/lib/containers/storage" in text
 
 
-def test_resolve_podman_context_uses_build_local_graphroot(tmp_path: Path) -> None:
+def test_resolve_podman_context_uses_build_local_graphroot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("RAVEN_CLOUD_BUILDER", raising=False)
     root = tmp_path / "repo"
     root.mkdir()
     (root / "pyproject.toml").write_text("[project]\nname='x'\n", encoding="utf-8")

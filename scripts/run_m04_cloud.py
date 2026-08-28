@@ -86,16 +86,24 @@ def write_candidate_handoff(paths: Any, *, review_ready: bool) -> None:
     )
 
 
+def gate_environment(name: str, base_env: dict[str, str]) -> dict[str, str]:
+    env = base_env.copy()
+    if name == "ci":
+        env.pop("RAVEN_CLOUD_BUILDER", None)
+    else:
+        env["RAVEN_CLOUD_BUILDER"] = "1"
+    return env
+
+
 def run_m04_cloud(repo_root: Path | None = None) -> dict[str, Any]:
     paths = build_paths(repo_root)
     paths.evidence_dir.mkdir(parents=True, exist_ok=True)
-    env = os.environ.copy()
-    env["RAVEN_CLOUD_BUILDER"] = "1"
+    base_env = os.environ.copy()
 
     results: list[GateResult] = []
     overall = RESULT_PASS
     for name, command in gate_plan():
-        result = run_gate(name, command, paths.repo_root, env)
+        result = run_gate(name, command, paths.repo_root, gate_environment(name, base_env))
         results.append(result)
         evidence_path = paths.evidence_dir / f"cloud-gate-{name}.txt"
         evidence_path.write_text(
