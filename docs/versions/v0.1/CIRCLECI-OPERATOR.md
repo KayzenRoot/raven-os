@@ -69,8 +69,8 @@ Use runtime `--help` on each command; CircleCI CLI v1 flags may change between r
 ## Manual M04 trigger
 
 **Disabled.** `just trigger-m04-cloud` exits nonzero. Do not use CircleCI for
-QCOW2/osbuild. Cirrus is the intended successor and is blocked while the GitHub
-repository is private.
+QCOW2/osbuild. Cirrus `m04-cirrus-builder` is the M04 path
+([CIRRUS-OPERATOR.md](CIRRUS-OPERATOR.md)).
 
 Monitor without the browser:
 

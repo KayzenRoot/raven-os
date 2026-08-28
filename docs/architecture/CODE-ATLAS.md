@@ -26,9 +26,10 @@ Compact map of repository areas. Distinguishes **present** from **planned**.
 | `scripts/artifact_metadata.py` | Present | SHA-256 provenance metadata |
 | `scripts/boot_smoke.py` | Present | Bounded UEFI QEMU boot smoke (KVM or TCG) |
 | `scripts/boot_smoke_qemu.py` | Present | UEFI QEMU command builder (testable) |
-| `scripts/run_m04_cloud.py` | Present | Ordered M04 gates + REVIEW ZIP (not CircleCI-triggered) |
+| `scripts/run_m04_cloud.py` | Present | Ordered M04 gates + REVIEW ZIP (Cirrus/local; not CircleCI-triggered) |
+| `scripts/cirrus_bootstrap.sh` | Present | Cirrus VM package/tool install (thin YAML helper) |
 | `.circleci/config.yml` | Present | Heavy M04 workflow **disabled** (`when: false`) |
-| `.cirrus.yml` | Absent | Not created while repository is PRIVATE (ADR-0003) |
+| `.cirrus.yml` | Present | Manual Cirrus Community Cluster M04 (`m04-cirrus-builder`, execution lock) |
 | `.build/` | Generated (ignored) | `images/`, `qcow2/`, `evidence/`, Podman graphroot |
 
 ## Source packages (`src/`)
@@ -68,4 +69,4 @@ Compact map of repository areas. Distinguishes **present** from **planned**.
 
 - **Executor:** implements INC-* under frozen architecture; produces review evidence.
 - **Sol:** architecture freeze, ADR acceptance, module ACCEPTED, version completion.
-- **Builder authority:** Cirrus CI full VM intended (ADR-0003, blocked on private repo); local Fedora Server 44 Builder VM (fallback). CircleCI is not M04 disk-image authority.
+- **Builder authority:** Cirrus CI Community Cluster full VM (ADR-0003); local Fedora Server 44 Builder VM (fallback). CircleCI is not M04 disk-image authority.

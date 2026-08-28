@@ -1,13 +1,13 @@
 # Raven Builder setup — INC-002 / Prompt 002D
 
-## Primary intended authority (blocked)
+## Primary authority
 
-**Cirrus CI** `docker_builder` full VM is the intended M04 disk-image authority
-([ADR-0003](../../adr/0003-use-cirrus-ci-full-vm-as-primary-m04-build-authority.md))
-**only when** `KayzenRoot/raven-os` is a public OSS repository.
+**Cirrus CI** Community Cluster full VM (`compute_engine_instance` /
+`cirrus-images` / `docker-kvm`, nested virtualization) is the M04 disk-image
+authority ([ADR-0003](../../adr/0003-use-cirrus-ci-full-vm-as-primary-m04-build-authority.md))
+now that `KayzenRoot/raven-os` is **PUBLIC**.
 
-Current visibility is **PRIVATE**. Do not connect Cirrus and do not add `.cirrus.yml`
-until Sol/human makes the repository public. Cirrus on a private repo is paid.
+Manual task: `m04-cirrus-builder`. See [CIRRUS-OPERATOR.md](CIRRUS-OPERATOR.md).
 
 ## CircleCI
 
@@ -59,6 +59,9 @@ just boot-smoke
 just ci-image
 just review
 ```
+
+On Cirrus the same sequence runs via `just run-m04-cloud` after
+`scripts/cirrus_bootstrap.sh`.
 
 `just build-qcow2` uses current `osbuild/image-builder` (`--bootc-ref`,
 `--bootc-default-fs btrfs`). Confirm flags with container `--help` on the Builder

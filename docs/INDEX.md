@@ -11,6 +11,7 @@ Operational and architecture docs for Raven OS V0.1 (VM Cognitive Seed).
 | [versions/v0.1/DEFINITION-OF-DONE.md](versions/v0.1/DEFINITION-OF-DONE.md) | V0.1 closure gates and success proof |
 | [versions/v0.1/BUILDER-SETUP.md](versions/v0.1/BUILDER-SETUP.md) | Raven Builder VM setup and Layer B gate sequence |
 | [versions/v0.1/CIRCLECI-OPERATOR.md](versions/v0.1/CIRCLECI-OPERATOR.md) | CircleCI CLI (lightweight diagnostics only; heavy M04 disabled) |
+| [versions/v0.1/CIRRUS-OPERATOR.md](versions/v0.1/CIRRUS-OPERATOR.md) | Cirrus OSS manual M04 builder (primary disk-image authority) |
 | [versions/v0.1/CIRCLECI-M04-BLOCKER.md](versions/v0.1/CIRCLECI-M04-BLOCKER.md) | CircleCI osbuild mount blocker evidence |
 
 ## Architecture maps
@@ -20,7 +21,7 @@ Operational and architecture docs for Raven OS V0.1 (VM Cognitive Seed).
 | [architecture/CODE-ATLAS.md](architecture/CODE-ATLAS.md) | Repository areas, ownership, V0.1 boundaries |
 | [architecture/MODULE-REGISTRY.md](architecture/MODULE-REGISTRY.md) | M01–M10 registry |
 | [architecture/TEST-MAP.md](architecture/TEST-MAP.md) | Proof categories and automated tests |
-| [adr/INDEX.md](adr/INDEX.md) | ADR convention; ADR-0002 image-builder; ADR-0003 Cirrus (blocked on private repo) |
+| [adr/INDEX.md](adr/INDEX.md) | ADR convention; ADR-0002 image-builder; ADR-0003 Cirrus primary M04 |
 
 ## Image source manifest
 
@@ -48,7 +49,7 @@ Canonical facade: `just` (see root `Justfile`).
 | `just artifact-metadata` | `uv run python -m scripts.artifact_metadata` |
 | `just boot-smoke` | `uv run python -m scripts.boot_smoke` |
 | `just ci-image` | builder-preflight → build-image → image-check → build-qcow2 → artifact-metadata → boot-smoke |
-| `just run-m04-cloud` | `uv run python -m scripts.run_m04_cloud` (local orchestrator; CircleCI trigger disabled) |
+| `just run-m04-cloud` | `uv run python -m scripts.run_m04_cloud` (Cirrus/local orchestrator; CircleCI trigger disabled) |
 | `just circleci-validate` | `circleci config validate` |
 | `just review` | `uv run python scripts/create_review.py --increment INC-002` |
 | `just format` | `uv run ruff format .` |

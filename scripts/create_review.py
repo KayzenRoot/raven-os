@@ -82,6 +82,7 @@ INCLUDE_PATHS: tuple[str, ...] = (
     "Containerfile",
     ".gitignore",
     ".circleci/config.yml",
+    ".cirrus.yml",
     "docs",
     "src",
     "scripts",
@@ -450,7 +451,7 @@ def build_review_json(ctx: ReviewContext) -> dict[str, Any]:
     }
     if ctx.cloud_result:
         payload["cloud_result"] = ctx.cloud_result
-        payload["builder_authority"] = "circleci-cloud"
+        payload["builder_authority"] = "cirrus-cloud"
     return payload
 
 
@@ -551,11 +552,14 @@ def default_file_list(repo_root: Path, increment: str) -> list[str]:
                 "scripts/run_m04_cloud.py",
                 "scripts/boot_smoke_qemu.py",
                 ".circleci/config.yml",
+                ".cirrus.yml",
                 "docs/adr/0001-use-circleci-free-as-primary-v0.1-cloud-build-authority.md",
                 "docs/adr/0002-migrate-disk-image-builds-to-osbuild-image-builder.md",
                 "docs/adr/0003-use-cirrus-ci-full-vm-as-primary-m04-build-authority.md",
                 "docs/versions/v0.1/CIRCLECI-M04-BLOCKER.md",
+                "docs/versions/v0.1/CIRRUS-OPERATOR.md",
                 "scripts/image_builder_cli.py",
+                "scripts/cirrus_bootstrap.sh",
                 "tests/test_002d_builder_migration.py",
             ]
         )
@@ -593,7 +597,7 @@ def create_review(
             "Podman storage: repo-local graphroot via CONTAINERS_STORAGE_CONF (002B).",
             "Boot smoke: explicit UEFI/OVMF pflash (002B Sol audit correction).",
             "CircleCI heavy M04 disabled (002D osbuild mount blocker).",
-            "Cirrus intended as primary M04 authority when repo is public (ADR-0003).",
+            "Cirrus Community Cluster is primary M04 authority (ADR-0003, public repo).",
         ],
         risks=[
             (
@@ -607,6 +611,7 @@ def create_review(
             "002B: build/QCOW2/image-check share repo-local Podman graphroot for BIB visibility.",
             "002B: preflight blocks without OVMF firmware and records BIB digest when available.",
             "002C: CircleCI Free cloud builder (manual run_m04) with TCG fallback on cloud.",
+            "002D: CircleCI heavy M04 disabled; Cirrus manual m04-cirrus-builder added.",
         ],
         cloud_result=cloud_result,
     )

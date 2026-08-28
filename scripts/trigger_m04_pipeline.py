@@ -20,7 +20,7 @@ def trigger_m04_pipeline(
     raise RuntimeError(
         "CircleCI heavy M04 is disabled (Prompt 002D / ADR-0003). "
         "Do not retry osbuild/QCOW2 on CircleCI. "
-        "Cirrus activation is blocked while KayzenRoot/raven-os is PRIVATE."
+        "Use Cirrus manual task m04-cirrus-builder (.cirrus.yml)."
     )
 
 

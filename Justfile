@@ -46,7 +46,7 @@ boot-smoke:
 # Expensive real-image gates for Raven Builder / CircleCI (not part of fast ci)
 ci-image: builder-preflight build-image image-check build-qcow2 artifact-metadata boot-smoke
 
-# CircleCI/cloud orchestrator (sets RAVEN_CLOUD_BUILDER=1)
+# CircleCI/cloud orchestrator (sets RAVEN_CLOUD_BUILDER=1). Used by Cirrus M04.
 run-m04-cloud:
     uv run python -m scripts.run_m04_cloud
 

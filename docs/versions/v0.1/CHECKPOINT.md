@@ -19,7 +19,9 @@ Per Prompt 002 instruction from Sol (not executor self-acceptance):
 ## Current scope
 
 INC-002 / Prompt 002D — CircleCI rejected as M04 disk-image authority; image-builder
-tooling migrated; Cirrus OSS activation **blocked** because `KayzenRoot/raven-os` is PRIVATE.
+tooling migrated; Cirrus `.cirrus.yml` added after `KayzenRoot/raven-os` became
+**PUBLIC**. M04 remains **BLOCKED** until a real QCOW2 + UEFI boot passes and Sol
+audits the REVIEW ZIP.
 
 ## Completed (Sol-accepted)
 
@@ -31,28 +33,21 @@ tooling migrated; Cirrus OSS activation **blocked** because `KayzenRoot/raven-os
 
 | Item | Status |
 |------|--------|
-| INC-002 / M04 | **BLOCKED** — Cirrus OSS free requires a public repository |
+| INC-002 / M04 | **BLOCKED** — Cirrus config present; Layer B (QCOW2 + boot) not yet proven |
 
 ## Prompt 002D infrastructure change (applied in source)
 
 - ADR-0002: prefer `ghcr.io/osbuild/image-builder` over archived bootc-image-builder
-- ADR-0003: Cirrus `docker_builder` is intended primary M04 authority when repo is public
+- ADR-0003: Cirrus Community Cluster full VM is primary M04 authority (public repo)
 - CircleCI heavy M04 workflow disabled (`when: false`)
 - Evidence: [CIRCLECI-M04-BLOCKER.md](CIRCLECI-M04-BLOCKER.md)
-- `.cirrus.yml` **not** created (would be a paid path on a private repo)
+- `.cirrus.yml`: manual `m04-cirrus-builder` + execution lock; REVIEW ZIP only
+- Operator: [CIRRUS-OPERATOR.md](CIRRUS-OPERATOR.md)
 
 ## Blockers
 
-**BLOCKED - CIRRUS OSS FREE ELIGIBILITY REQUIRES PUBLIC REPOSITORY**
-
-Do not change visibility automatically. Human/Sol next step:
-
-1. Decide whether `KayzenRoot/raven-os` may be made **public**
-2. If public: add `.cirrus.yml` (manual + execution lock) and install Cirrus GitHub App
-   only for this repo (no payment method)
-3. Otherwise: use local Fedora Builder fallback (`just ci-image`)
-
-Source branch remains **M04 BLOCKED**. Progress remains 20%.
+M04 Layer B (real QCOW2 + UEFI boot smoke) has not yet passed on Cirrus.
+CircleCI heavy M04 stays disabled. Do not start M05.
 
 ## Decisions
 
@@ -65,15 +60,16 @@ Source branch remains **M04 BLOCKED**. Progress remains 20%.
 
 ### Layer A (local)
 
-- `just ci` — includes 002D contracts (CircleCI disabled, image-builder CLI, no `.cirrus.yml`)
+- `just ci` — includes 002D contracts (CircleCI disabled, Cirrus manual, image-builder CLI)
 
 ### Layer B (real QCOW2 + UEFI boot)
 
-- Not executed in this increment (Cirrus not eligible; CircleCI heavy disabled)
+- Not yet proven on Cirrus in this increment
 
 ## Next step
 
-Human/Sol: repository visibility decision. Do not trigger CircleCI M04.
+Authorize Cirrus GitHub App for `KayzenRoot/raven-os` if needed, then trigger
+**one** manual `m04-cirrus-builder`. Do not trigger CircleCI M04. Do not start M05.
 
 ## DoD status summary
 

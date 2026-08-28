@@ -147,7 +147,7 @@ def evaluate_preflight(repo_root: Path | None = None) -> dict[str, Any]:
 
     checks: dict[str, Any] = {
         "platform": platform_summary(),
-        "builder_authority": "circleci-cloud" if cloud_builder else "local-linux",
+        "builder_authority": "cirrus-cloud" if cloud_builder else "local-linux",
         "acceleration": acceleration,
         "cloud_builder": cloud_builder,
         "tools": {
