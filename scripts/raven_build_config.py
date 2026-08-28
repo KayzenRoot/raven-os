@@ -22,6 +22,8 @@ IMAGES_SUBDIR = "images"
 QCOW2_SUBDIR = "qcow2"
 EVIDENCE_SUBDIR = "evidence"
 PODMAN_STORAGE_STRATEGY = "repo-local-containers-storage-conf"
+CLOUD_PODMAN_GRAPHROOT = "/var/lib/containers/storage"
+CLOUD_PODMAN_RUNROOT = "/run/containers/storage"
 
 OVMF_FIRMWARE_CANDIDATES: tuple[tuple[str, str], ...] = (
     ("/usr/share/edk2/ovmf/OVMF_CODE.secboot.fd", "/usr/share/edk2/ovmf/OVMF_VARS.secboot.fd"),
@@ -102,13 +104,23 @@ def build_paths(repo_root: Path | None = None) -> BuildPaths:
 
 def ensure_podman_storage(paths: BuildPaths) -> Path:
     paths.containers_dir.mkdir(parents=True, exist_ok=True)
-    paths.podman_graphroot.mkdir(parents=True, exist_ok=True)
-    paths.podman_runroot.mkdir(parents=True, exist_ok=True)
+    if is_cloud_builder():
+        graphroot = Path(CLOUD_PODMAN_GRAPHROOT)
+        runroot = Path(CLOUD_PODMAN_RUNROOT)
+        subprocess.run(
+            ["sudo", "mkdir", "-p", str(graphroot), str(runroot)],
+            check=False,
+        )
+    else:
+        graphroot = paths.podman_graphroot
+        runroot = paths.podman_runroot
+        graphroot.mkdir(parents=True, exist_ok=True)
+        runroot.mkdir(parents=True, exist_ok=True)
     paths.podman_storage_conf.write_text(
         "[storage]\n"
         'driver = "overlay"\n'
-        f'graphroot = "{paths.podman_graphroot.as_posix()}"\n'
-        f'runroot = "{paths.podman_runroot.as_posix()}"\n',
+        f'graphroot = "{graphroot.as_posix()}"\n'
+        f'runroot = "{runroot.as_posix()}"\n',
         encoding="utf-8",
     )
     return paths.podman_storage_conf
@@ -132,17 +144,20 @@ def resolve_podman_context(paths: BuildPaths) -> PodmanContext:
         containers_conf = ensure_cloud_containers_conf(paths)
         env["CONTAINERS_CONF"] = str(containers_conf.resolve())
         env["BUILDAH_ISOLATION"] = "chroot"
-        strategy = f"{PODMAN_STORAGE_STRATEGY}+cloud-rootful-sudo+cgroupfs"
+        strategy = f"{PODMAN_STORAGE_STRATEGY}+cloud-system-graphroot+rootful-sudo+cgroupfs"
+        storage_mount_path = CLOUD_PODMAN_GRAPHROOT
+    else:
+        storage_mount_path = str(paths.podman_graphroot.resolve())
     return PodmanContext(
         command_prefix=("podman",),
         env=env,
-        storage_mount_path=str(paths.podman_graphroot.resolve()),
+        storage_mount_path=storage_mount_path,
         strategy=strategy,
     )
 
 
 def podman_command(ctx: PodmanContext, *args: str) -> list[str]:
-    if "cloud-rootful-sudo" in ctx.strategy:
+    if "rootful-sudo" in ctx.strategy:
         env_pairs: list[str] = []
         for key in ("CONTAINERS_STORAGE_CONF", "CONTAINERS_CONF", "BUILDAH_ISOLATION"):
             value = ctx.env.get(key)
