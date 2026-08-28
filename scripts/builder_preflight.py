@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+import time
 from pathlib import Path
 from typing import Any
 
@@ -49,8 +50,26 @@ def kvm_available() -> bool:
     return Path("/dev/kvm").exists()
 
 
+def pull_with_retry(
+    ctx: Any,
+    reference: str,
+    paths: Any,
+    *,
+    attempts: int = 3,
+    delay_seconds: float = 5.0,
+) -> Any:
+    last = None
+    for attempt in range(1, attempts + 1):
+        last = run_podman(ctx, ["pull", reference], paths.repo_root)
+        if last.returncode == 0:
+            return last
+        if attempt < attempts:
+            time.sleep(delay_seconds)
+    return last
+
+
 def inspect_base_image(base_reference: str, paths: Any, ctx: Any) -> dict[str, Any]:
-    pull = run_podman(ctx, ["pull", base_reference], paths.repo_root)
+    pull = pull_with_retry(ctx, base_reference, paths)
     if pull.returncode != 0:
         return {
             "status": "blocked",
@@ -81,7 +100,7 @@ def inspect_base_image(base_reference: str, paths: Any, ctx: Any) -> dict[str, A
 
 
 def inspect_image_builder(image_reference: str, paths: Any, ctx: Any) -> dict[str, Any]:
-    pull = run_podman(ctx, ["pull", image_reference], paths.repo_root)
+    pull = pull_with_retry(ctx, image_reference, paths)
     if pull.returncode != 0:
         return {
             "status": "blocked",

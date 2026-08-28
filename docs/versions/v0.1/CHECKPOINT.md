@@ -60,7 +60,7 @@ after 002E-R2 harness fix. Prior attempt history on `main`:
 | `33191467126` | `f462879` | FAIL (~11m) | `image-check` — conmon journald log driver |
 | `33192739565` | `0e3d57e` (crun only) | FAIL (~11m) | `image-check` — same conmon/journald error |
 | `33193783890` | `1f603e8` (002E-R1 #1) | FAIL (~18m) | `boot-smoke` — no serial markers (KVM) |
-| `33195816360` | `d2439ab` (002E-R1 #2) | FAIL (~0.14s) | `boot-smoke` — TCG; immediate QEMU exit; no stderr surfaced |
+| `33200468426` | `3e127c6` (002E-R2 #1) | FAIL (~1m) | `builder-preflight` — transient base image pull |
 
 Run `33195816360` facts (verified via `gh run view --log-failed`):
 
@@ -72,7 +72,8 @@ Run `33195816360` facts (verified via `gh run view --log-failed`):
 - Root cause class: QEMU launch failure (likely disk permission / missing snapshot), not guest boot timeout
 
 Prompt 002E-R1 retry budget **exhausted (2/2)**. Prompt 002E-R2 authorizes **2 NEW**
-heavy attempts. Do not start M05.
+heavy attempts (run 1 `33200468426` blocked at preflight pull; pull retry added for run 2).
+Do not start M05.
 
 ## Next step
 
