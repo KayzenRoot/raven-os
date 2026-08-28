@@ -33,8 +33,19 @@ def test_resolve_acceleration_tcg_without_kvm() -> None:
         assert resolve_acceleration() == "tcg"
 
 
+def test_resolve_acceleration_tcg_on_cloud_even_with_kvm() -> None:
+    with (
+        patch("scripts.raven_build_config.is_cloud_builder", return_value=True),
+        patch("scripts.raven_build_config.kvm_device_present", return_value=True),
+    ):
+        assert resolve_acceleration() == "tcg"
+
+
 def test_resolve_acceleration_kvm_when_device_present() -> None:
-    with patch("scripts.raven_build_config.kvm_device_present", return_value=True):
+    with (
+        patch("scripts.raven_build_config.is_cloud_builder", return_value=False),
+        patch("scripts.raven_build_config.kvm_device_present", return_value=True),
+    ):
         assert resolve_acceleration() == "kvm"
 
 
@@ -64,6 +75,14 @@ def test_qemu_command_uses_uefi_pflash_for_tcg(tmp_path: Path) -> None:
     assert "q35,accel=tcg" in joined
     assert "if=pflash" in joined
     assert "-cpu max" in joined
+
+
+def test_boot_smoke_uses_longer_cloud_timeout() -> None:
+    text = (Path(__file__).resolve().parents[1] / "scripts" / "boot_smoke.py").read_text(
+        encoding="utf-8"
+    )
+    assert "is_cloud_builder" in text
+    assert "300" in text
 
 
 def test_qemu_command_uses_kvm_and_host_cpu_when_requested(tmp_path: Path) -> None:

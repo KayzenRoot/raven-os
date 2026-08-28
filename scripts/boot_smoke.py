@@ -15,6 +15,7 @@ from scripts.raven_build_config import (
     command_exists,
     detect_uefi_firmware,
     ensure_within_build_root,
+    is_cloud_builder,
     is_linux_x86_64,
     platform_summary,
     resolve_acceleration,
@@ -27,8 +28,10 @@ def evaluate_serial_log(serial_text: str) -> tuple[bool, list[str]]:
     return bool(observed), observed
 
 
-def boot_smoke(repo_root: Path | None = None, timeout_seconds: int = 120) -> int:
+def boot_smoke(repo_root: Path | None = None, timeout_seconds: int | None = None) -> int:
     paths = build_paths(repo_root)
+    if timeout_seconds is None:
+        timeout_seconds = 300 if is_cloud_builder() else 120
     if not is_linux_x86_64():
         print("error: boot-smoke requires Linux x86_64 Raven Builder", file=sys.stderr)
         return 2

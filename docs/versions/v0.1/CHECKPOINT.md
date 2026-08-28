@@ -2,7 +2,7 @@
 
 - **STATUS:** IN PROGRESS
 - **VERSION:** V0.1
-- **PHASE:** Image Foundation (M04) — Prompt 002E boot-smoke / UEFI serial marker gap
+- **PHASE:** Image Foundation (M04) — Prompt 002E-R1 k8s-file fix applied; boot-smoke TCG follow-up
 - **OBJECTIVE:** Deliver a small VM Cognitive Seed (local-first cognitive Linux OS seed), not the full long-term product.
 - **VERSION PROGRESS:** 20% (20/100 Sol-accepted points; M04 pending real Builder Layer B)
 - **COMPLETED POINTS:** 20
@@ -59,16 +59,15 @@ GitHub M04 attempt history on `main`:
 | `33192739565` | `0e3d57e` (crun only) | FAIL (~11m) | `image-check` — same conmon/journald error |
 | `33193783890` | `1f603e8` (002E-R1) | FAIL (~18m) | `boot-smoke` — UEFI serial markers not observed |
 
-Run `33192739565` proved `runtime=crun` alone is insufficient on `ubuntu-24.04`.
-Commit `1f603e8` (002E-R1, `k8s-file` log driver) cleared `image-check` on run
-`33193783890`; latest blocker is `boot-smoke` serial-log marker detection.
+Run `33193783890` (`1f603e8`, 002E-R1 `k8s-file`) cleared `image-check`; failed
+`boot-smoke` in 0.12s (KVM selected despite unusable nested virt on GHA). Follow-up:
+force TCG acceleration on cloud builder + 300s boot-smoke timeout.
 CircleCI heavy M04 stays disabled. Do not start M05.
 
 ## Next step
 
-Sol: review attempt 4 evidence (`33193783890`) — `image-check` passed; `boot-smoke`
-failed. Executor may investigate UEFI serial-log markers / QEMU boot path only if
-Sol authorizes another heavy attempt. M04 stays **BLOCKED** until Layer B passes and
+Executor: trigger M04 Run 2 after boot-smoke TCG push (`gh workflow run m04.yml
+--ref main -f confirm_m04=true`). M04 stays **BLOCKED** until Layer B passes and
 Sol audits the REVIEW ZIP.
 
 ## Decisions

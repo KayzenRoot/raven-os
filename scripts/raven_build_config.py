@@ -353,6 +353,8 @@ def kvm_device_present() -> bool:
 
 def resolve_acceleration() -> str:
     """Return ``kvm`` when usable, otherwise ``tcg`` (accepted on cloud builders)."""
+    if is_cloud_builder():
+        return "tcg"
     if kvm_device_present():
         return "kvm"
     return "tcg"
