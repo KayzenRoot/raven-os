@@ -50,17 +50,25 @@ Points stay 20 / 20%.
 ## Blockers
 
 M04 Layer B (real QCOW2 + UEFI boot smoke) has not yet passed on GitHub Actions.
-Attempt 2 (run `33191467126`) reached `image-check` then failed with Podman `conmon`
-journald log-driver error on the standard runner (exit 126). Prompt 002E-R1 applies a
-`k8s-file` container log driver fix in Raven cloud `containers.conf`. CircleCI heavy
-M04 stays disabled. Do not start M05.
+GitHub M04 attempts under Prompt 002E exhausted (2/2). Follow-up runs:
+
+| Run | SHA | Result | Failed step |
+|-----|-----|--------|-------------|
+| `33191087333` | `ce093ec`/`f462879` | FAIL (~58s) | `builder-preflight` / podman path |
+| `33191467126` | `f462879` | FAIL (~11m) | `image-check` — conmon journald log driver |
+| `33192739565` | `0e3d57e` (crun only) | FAIL (~11m) | `image-check` — same conmon/journald error |
+
+Run `33192739565` proved `runtime=crun` alone is insufficient on `ubuntu-24.04`.
+Commit `1f603e8` adds Raven cloud `containers.conf` `log_driver=k8s-file` plus
+`image-check` verification and explicit `--log-driver=k8s-file`; **not yet run on GHA**.
+CircleCI heavy M04 stays disabled. Do not start M05.
 
 ## Next step
 
-Executor: trigger M04 Run 1 after 002E-R1 push (`gh workflow run m04.yml --ref main
--f confirm_m04=true`). Prior attempts 1–2 failed (preflight/podman path, then
-`image-check` conmon/journald). M04 stays **BLOCKED** until Layer B evidence exists
-and Sol audits the REVIEW ZIP.
+Sol: trigger one M04 run on `main` at `1f603e8` or later
+(`gh workflow run m04.yml --ref main -f confirm_m04=true`), monitor with
+`gh run watch`, and audit REVIEW ZIP if Layer B gates pass. M04 stays **BLOCKED**
+until real QCOW2 + UEFI boot smoke evidence exists.
 
 ## Decisions
 
