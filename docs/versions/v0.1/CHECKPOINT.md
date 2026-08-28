@@ -2,7 +2,7 @@
 
 - **STATUS:** IN PROGRESS
 - **VERSION:** V0.1
-- **PHASE:** Image Foundation (M04) — Prompt 002E-R1 Podman k8s-file log driver fix
+- **PHASE:** Image Foundation (M04) — Prompt 002E boot-smoke / UEFI serial marker gap
 - **OBJECTIVE:** Deliver a small VM Cognitive Seed (local-first cognitive Linux OS seed), not the full long-term product.
 - **VERSION PROGRESS:** 20% (20/100 Sol-accepted points; M04 pending real Builder Layer B)
 - **COMPLETED POINTS:** 20
@@ -50,25 +50,26 @@ Points stay 20 / 20%.
 ## Blockers
 
 M04 Layer B (real QCOW2 + UEFI boot smoke) has not yet passed on GitHub Actions.
-GitHub M04 attempts under Prompt 002E exhausted (2/2). Follow-up runs:
+GitHub M04 attempt history on `main`:
 
 | Run | SHA | Result | Failed step |
 |-----|-----|--------|-------------|
-| `33191087333` | `ce093ec`/`f462879` | FAIL (~58s) | `builder-preflight` / podman path |
+| `33191087333` | `ce093ec`/`f462879` | FAIL (~2m) | `builder-preflight` / podman path |
 | `33191467126` | `f462879` | FAIL (~11m) | `image-check` — conmon journald log driver |
 | `33192739565` | `0e3d57e` (crun only) | FAIL (~11m) | `image-check` — same conmon/journald error |
+| `33193783890` | `1f603e8` (002E-R1) | FAIL (~18m) | `boot-smoke` — UEFI serial markers not observed |
 
 Run `33192739565` proved `runtime=crun` alone is insufficient on `ubuntu-24.04`.
-Commit `1f603e8` adds Raven cloud `containers.conf` `log_driver=k8s-file` plus
-`image-check` verification and explicit `--log-driver=k8s-file`; **not yet run on GHA**.
+Commit `1f603e8` (002E-R1, `k8s-file` log driver) cleared `image-check` on run
+`33193783890`; latest blocker is `boot-smoke` serial-log marker detection.
 CircleCI heavy M04 stays disabled. Do not start M05.
 
 ## Next step
 
-Sol: trigger one M04 run on `main` at `1f603e8` or later
-(`gh workflow run m04.yml --ref main -f confirm_m04=true`), monitor with
-`gh run watch`, and audit REVIEW ZIP if Layer B gates pass. M04 stays **BLOCKED**
-until real QCOW2 + UEFI boot smoke evidence exists.
+Sol: review attempt 4 evidence (`33193783890`) — `image-check` passed; `boot-smoke`
+failed. Executor may investigate UEFI serial-log markers / QEMU boot path only if
+Sol authorizes another heavy attempt. M04 stays **BLOCKED** until Layer B passes and
+Sol audits the REVIEW ZIP.
 
 ## Decisions
 
@@ -85,7 +86,15 @@ until real QCOW2 + UEFI boot smoke evidence exists.
 
 ### Layer B (real QCOW2 + UEFI boot)
 
-- Not yet proven on GitHub Actions in this increment
+- GHA run `33193783890` (`1f603e8`): `image-check` passed; `boot-smoke` failed
+  (UEFI serial markers not observed). Layer B not yet proven.
+- Attempt 4 `boot-smoke` evidence (from GHA log + `scripts/boot_smoke.py`):
+  - Serial log path: `.build/evidence/boot-smoke-serial.log`
+  - Expected markers (any one): `Fedora`, `systemd`, `Linux version`, `Kinoite`, `EFI`
+  - Observed markers: **none** (exit 1 after 120s bounded QEMU run)
+  - QEMU/OVMF: `q35` + OVMF pflash code/vars + virtio QCOW2 + `-serial file:` +
+    `-display none` + `-no-reboot`; acceleration `tcg` on GHA (no `/dev/kvm`)
+  - No run artifacts uploaded (failed before REVIEW ZIP)
 
 ## DoD status summary
 
