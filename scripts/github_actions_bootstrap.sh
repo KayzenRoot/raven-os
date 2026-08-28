@@ -91,9 +91,11 @@ maybe_cleanup_runner_caches() {
 maybe_cleanup_runner_caches
 
 sudo apt-get update -y
-sudo apt-get install -y \
-  ca-certificates \
-  curl \
+  sudo apt-get install -y \
+    ca-certificates \
+    conmon \
+    crun \
+    curl \
   git \
   jq \
   ovmf \

@@ -50,13 +50,16 @@ Points stay 20 / 20%.
 ## Blockers
 
 M04 Layer B (real QCOW2 + UEFI boot smoke) has not yet passed on GitHub Actions.
-CircleCI heavy M04 stays disabled. Do not start M05.
+Attempt 2 reached `image-check` then failed with Podman `conmon` runtime error on the
+standard runner. Retry budget for Prompt 002E is exhausted (2/2). A `crun` runtime fix
+is committed for Sol follow-up. CircleCI heavy M04 stays disabled. Do not start M05.
 
 ## Next step
 
-Trigger one heavy M04 run via `gh workflow run m04.yml --ref main -f confirm_m04=true`,
-monitor with `gh run watch`, and download `raven-review` on success. M04 stays
-**BLOCKED** until Layer B evidence exists and Sol audits the REVIEW ZIP.
+Sol follow-up: re-trigger M04 after reviewing the `crun` runtime fix
+(`gh workflow run m04.yml --ref main -f confirm_m04=true`). Attempts 1–2 failed
+(preflight/podman path, then `image-check` conmon). M04 stays **BLOCKED** until Layer B
+evidence exists and Sol audits the REVIEW ZIP.
 
 ## Decisions
 

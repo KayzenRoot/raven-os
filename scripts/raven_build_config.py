@@ -130,7 +130,7 @@ def ensure_podman_storage(paths: BuildPaths) -> Path:
 def ensure_cloud_containers_conf(paths: BuildPaths) -> Path:
     conf_path = paths.containers_dir / "containers.conf"
     conf_path.write_text(
-        '[engine]\ncgroup_manager = "cgroupfs"\nevents_logger = "file"\n',
+        '[engine]\ncgroup_manager = "cgroupfs"\nevents_logger = "file"\nruntime = "crun"\n',
         encoding="utf-8",
     )
     return conf_path
