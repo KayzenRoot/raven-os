@@ -64,7 +64,7 @@ Run `33200940474` facts:
 - All cloud gates PASS through `boot-smoke`
 - Acceleration: TCG (cloud-forced)
 - `run-m04-cloud: PASS_REVIEW_READY`
-- REVIEW ZIP: `RAVEN-OS-V0.1-INC-002-REVIEW.zip` (SHA-256 `5e2ba24164ba47db01bbfa86ffb388d722445a64ad3fa6240ce3ddbcf3c1a82`)
+- REVIEW ZIP: `RAVEN-OS-V0.1-INC-002-REVIEW.zip` (SHA-256 `aa4b1aa588bde2d0de45f79996544fc0a1149a12c1bd8b9249f80398802c4cbfa`)
 
 002E-R2 heavy retry budget **exhausted (2/2)**. Do not trigger another GHA M04 run. Do not start M05.
 
