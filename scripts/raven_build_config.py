@@ -16,7 +16,8 @@ from typing import Any
 DEFAULT_BASE_IMAGE = "quay.io/fedora/fedora-kinoite:44"
 DEFAULT_FEDORA_MAJOR = 44
 RAVEN_LOCAL_IMAGE = "localhost/raven-os:0.1-dev"
-BIB_REFERENCE = "quay.io/centos-bootc/bootc-image-builder:latest"
+IMAGE_BUILDER_REFERENCE = "ghcr.io/osbuild/image-builder:latest"
+ARCHIVED_BIB_REFERENCE = "quay.io/centos-bootc/bootc-image-builder:latest"
 BUILD_ROOT_NAME = ".build"
 IMAGES_SUBDIR = "images"
 QCOW2_SUBDIR = "qcow2"
@@ -177,8 +178,8 @@ def write_podman_storage_evidence(paths: BuildPaths, ctx: PodmanContext) -> None
         "bib_mount_target": "/var/lib/containers/storage",
         "bib_mount_source": ctx.storage_mount_path,
         "note": (
-            "All M04 podman build/inspect/run commands and bootc-image-builder share the "
-            "repo-local graphroot via CONTAINERS_STORAGE_CONF and an identical bind mount."
+            "All M04 podman build/inspect/run commands and osbuild/image-builder share the "
+            "rootful graphroot via CONTAINERS_STORAGE_CONF and an identical bind mount."
         ),
     }
     (paths.evidence_dir / "podman-storage.json").write_text(
@@ -231,7 +232,7 @@ def update_manifest_verified_digests(
     if bib_digest:
         update_manifest_field(
             paths.manifest_path,
-            "bootc_image_builder_resolved_digest",
+            "image_builder_resolved_digest",
             bib_digest,
         )
 

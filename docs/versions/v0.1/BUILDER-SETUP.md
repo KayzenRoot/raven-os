@@ -1,19 +1,19 @@
-# Raven Builder setup — INC-002 / Prompts 002B + 002C
+# Raven Builder setup — INC-002 / Prompt 002D
 
-## Primary authority (Prompt 002C)
+## Primary intended authority (blocked)
 
-**CircleCI Free** Linux `machine` executor is the primary M04 build authority (see
-[ADR-0001](../../adr/0001-use-circleci-free-as-primary-v0.1-cloud-build-authority.md)).
+**Cirrus CI** `docker_builder` full VM is the intended M04 disk-image authority
+([ADR-0003](../../adr/0003-use-cirrus-ci-full-vm-as-primary-m04-build-authority.md))
+**only when** `KayzenRoot/raven-os` is a public OSS repository.
 
-Manual pipeline only:
+Current visibility is **PRIVATE**. Do not connect Cirrus and do not add `.cirrus.yml`
+until Sol/human makes the repository public. Cirrus on a private repo is paid.
 
-1. Connect CircleCI project to `https://github.com/KayzenRoot/raven-os` branch `main`
-2. Set Up Project (no paid features, no DLC)
-3. Trigger pipeline with parameter **`run_m04=true`**
-4. Download REVIEW ZIP artifact from the job (QCOW2 is not uploaded)
+## CircleCI
 
-CircleCI config uses `ubuntu-2604:current`, `resource_class: medium`, and sets
-`RAVEN_CLOUD_BUILDER=1` for TCG fallback when KVM is absent.
+CircleCI is **not** the M04 QCOW2/osbuild authority
+([CIRCLECI-M04-BLOCKER.md](CIRCLECI-M04-BLOCKER.md)). Heavy workflow is disabled.
+CLI tooling may remain for lightweight diagnostics.
 
 ## Fallback: local Fedora Server 44 Builder
 
@@ -60,6 +60,10 @@ just ci-image
 just review
 ```
 
+`just build-qcow2` uses current `osbuild/image-builder` (`--bootc-ref`,
+`--bootc-default-fs btrfs`). Confirm flags with container `--help` on the Builder
+and record the resolved digest.
+
 Expected outcomes on a capable Builder:
 
 - `builder-preflight` → **PASS** and updates `os/image-source.toml` digests
@@ -67,14 +71,13 @@ Expected outcomes on a capable Builder:
 - `ci-image` → all steps pass
 - M04 may move to **REVIEW** (not ACCEPTED) for Sol audit
 
-## Podman storage note (002B correction)
+## Podman storage note
 
-M04 uses a repo-local Podman graphroot under `.build/containers/storage` via
-`CONTAINERS_STORAGE_CONF`. The same graphroot is bind-mounted into
-bootc-image-builder at `/var/lib/containers/storage` so the Raven OCI image built
-by `just build-image` is visible to `just build-qcow2`.
+On a local Fedora Builder, M04 uses a repo-local Podman graphroot under
+`.build/containers/storage`. Cloud/full-VM rootful builds use
+`/var/lib/containers/storage` so image-builder can see the Raven OCI image.
 
 ## Windows / non-Builder hosts
 
 Do not fabricate OCI/QCOW2/boot evidence. Layer A (`just ci`) may pass, but M04
-remains **BLOCKED** until the sequence above succeeds on the Builder.
+remains **BLOCKED** until the sequence above succeeds on a capable Builder.

@@ -58,8 +58,11 @@ def test_manifest_parses_with_required_fields() -> None:
         assert key in image, f"missing image.{key}"
     assert image["fedora_major"] == 44
     assert image["target_architecture"] == "x86_64"
-    assert "bootc_image_builder_reference" in tooling
-    assert "bootc_image_builder_policy" in tooling
+    assert "image_builder_reference" in tooling
+    assert "image_builder_policy" in tooling
+    assert "bootc_image_builder_reference" not in tooling
+    assert "ghcr.io/osbuild/image-builder" in str(tooling["image_builder_reference"])
+    assert "centos-bootc/bootc-image-builder" not in str(tooling["image_builder_reference"])
 
 
 def test_manifest_does_not_use_latest_as_release_pin() -> None:
@@ -157,12 +160,13 @@ def test_cloud_podman_context_uses_cgroupfs(monkeypatch: pytest.MonkeyPatch) -> 
     assert "podman" in cmd
 
 
-def test_build_qcow2_mounts_repo_graphroot_for_bootc_image_builder() -> None:
+def test_build_qcow2_uses_current_image_builder_cli() -> None:
     text = (SCRIPTS / "build_qcow2.py").read_text(encoding="utf-8")
     assert "storage_mount_path" in text
     assert "/var/lib/containers/storage" in text
-    assert "SYS_ADMIN" in text
-    assert "/run/osbuild:/run/osbuild" in text
+    assert "--bootc-ref" in text or "image_builder_build_qcow2_args" in text
+    assert "--type" not in text
+    assert "centos-bootc/bootc-image-builder" not in text
 
 
 def test_resolve_podman_context_uses_build_local_graphroot(

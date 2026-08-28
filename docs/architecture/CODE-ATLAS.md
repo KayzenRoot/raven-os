@@ -20,13 +20,15 @@ Compact map of repository areas. Distinguishes **present** from **planned**.
 | `scripts/raven_build_config.py` | Present | Build paths, manifest load, guards |
 | `scripts/builder_preflight.py` | Present | Layer B capability diagnostics |
 | `scripts/build_image.py` | Present | Podman OCI build |
-| `scripts/build_qcow2.py` | Present | bootc-image-builder QCOW2 path |
+| `scripts/build_qcow2.py` | Present | osbuild/image-builder QCOW2 path (ADR-0002) |
+| `scripts/image_builder_cli.py` | Present | Current image-builder CLI args |
 | `scripts/image_check.py` | Present | OCI inspection / Raven labels |
 | `scripts/artifact_metadata.py` | Present | SHA-256 provenance metadata |
 | `scripts/boot_smoke.py` | Present | Bounded UEFI QEMU boot smoke (KVM or TCG) |
 | `scripts/boot_smoke_qemu.py` | Present | UEFI QEMU command builder (testable) |
-| `scripts/run_m04_cloud.py` | Present | CircleCI/cloud M04 gate orchestrator |
-| `.circleci/config.yml` | Present | Manual M04 cloud pipeline (`run_m04` default false) |
+| `scripts/run_m04_cloud.py` | Present | Ordered M04 gates + REVIEW ZIP (not CircleCI-triggered) |
+| `.circleci/config.yml` | Present | Heavy M04 workflow **disabled** (`when: false`) |
+| `.cirrus.yml` | Absent | Not created while repository is PRIVATE (ADR-0003) |
 | `.build/` | Generated (ignored) | `images/`, `qcow2/`, `evidence/`, Podman graphroot |
 
 ## Source packages (`src/`)
@@ -66,4 +68,4 @@ Compact map of repository areas. Distinguishes **present** from **planned**.
 
 - **Executor:** implements INC-* under frozen architecture; produces review evidence.
 - **Sol:** architecture freeze, ADR acceptance, module ACCEPTED, version completion.
-- **Builder authority:** CircleCI Free cloud (primary, ADR-0001); local Fedora Server 44 Builder VM (fallback).
+- **Builder authority:** Cirrus CI full VM intended (ADR-0003, blocked on private repo); local Fedora Server 44 Builder VM (fallback). CircleCI is not M04 disk-image authority.

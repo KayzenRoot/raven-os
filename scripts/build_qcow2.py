@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
-"""Convert the local Raven OCI image to QCOW2 via bootc-image-builder (M04)."""
+"""Convert the local Raven OCI image to QCOW2 via osbuild/image-builder (M04)."""
 
 from __future__ import annotations
 
 import argparse
-import subprocess
 import sys
 from pathlib import Path
 
+from scripts.image_builder_cli import image_builder_build_qcow2_args
 from scripts.raven_build_config import (
-    BIB_REFERENCE,
+    IMAGE_BUILDER_REFERENCE,
     RAVEN_LOCAL_IMAGE,
     build_paths,
     command_exists,
     ensure_within_build_root,
-    is_cloud_builder,
     is_linux_x86_64,
     load_manifest,
     podman_command,
@@ -24,23 +23,15 @@ from scripts.raven_build_config import (
 )
 
 
-def prepare_cloud_bib_runtime() -> None:
-    if not is_cloud_builder():
-        return
-    for path in ("/run/osbuild", "/run/osbuild/containers", "/run/osbuild/containers/storage"):
-        subprocess.run(["sudo", "mkdir", "-p", path], check=False)
-        subprocess.run(["sudo", "chmod", "777", path], check=False)
-
-
-def bib_container_run_args(
+def image_builder_container_run_args(
     *,
     output_mount: Path,
     storage_mount_path: str,
-    bib_ref: str,
+    image_builder_ref: str,
     rootfs: str,
     local_tag: str,
 ) -> list[str]:
-    run_args = [
+    return [
         "run",
         "--rm",
         "--privileged",
@@ -50,36 +41,12 @@ def bib_container_run_args(
         f"{output_mount}:/output",
         "-v",
         f"{storage_mount_path}:/var/lib/containers/storage",
+        image_builder_ref,
+        *image_builder_build_qcow2_args(
+            bootc_ref=local_tag,
+            rootfs=rootfs,
+        ),
     ]
-    if is_cloud_builder():
-        run_args.extend(
-            [
-                "--userns=host",
-                "--cap-add",
-                "SYS_ADMIN",
-                "--security-opt",
-                "seccomp=unconfined",
-                "--security-opt",
-                "label=disable",
-                "-v",
-                "/run/osbuild:/run/osbuild",
-                "-v",
-                "/dev:/dev",
-            ]
-        )
-    run_args.extend(
-        [
-            bib_ref,
-            "--type",
-            "qcow2",
-            "--rootfs",
-            rootfs,
-            "--target-arch",
-            "x86_64",
-            local_tag,
-        ]
-    )
-    return run_args
 
 
 def build_qcow2(repo_root: Path | None = None, output_name: str = "raven-os-v0.1.qcow2") -> int:
@@ -96,7 +63,7 @@ def build_qcow2(repo_root: Path | None = None, output_name: str = "raven-os-v0.1
     tooling = manifest["tooling"]
     local_tag = str(image_cfg.get("raven_local_image", RAVEN_LOCAL_IMAGE))
     rootfs = str(image_cfg.get("qcow2_root_filesystem", "btrfs"))
-    bib_ref = str(tooling.get("bootc_image_builder_reference", BIB_REFERENCE))
+    image_builder_ref = str(tooling.get("image_builder_reference", IMAGE_BUILDER_REFERENCE))
 
     paths.qcow2_dir.mkdir(parents=True, exist_ok=True)
     paths.evidence_dir.mkdir(parents=True, exist_ok=True)
@@ -113,11 +80,10 @@ def build_qcow2(repo_root: Path | None = None, output_name: str = "raven-os-v0.1
         return 1
 
     output_mount = paths.qcow2_dir.resolve()
-    prepare_cloud_bib_runtime()
-    run_args = bib_container_run_args(
+    run_args = image_builder_container_run_args(
         output_mount=output_mount,
         storage_mount_path=ctx.storage_mount_path,
-        bib_ref=bib_ref,
+        image_builder_ref=image_builder_ref,
         rootfs=rootfs,
         local_tag=local_tag,
     )
@@ -126,6 +92,7 @@ def build_qcow2(repo_root: Path | None = None, output_name: str = "raven-os-v0.1
     log_path.write_text(
         f"storage_strategy: {ctx.strategy}\n"
         f"storage_mount_source: {ctx.storage_mount_path}\n"
+        f"image_builder_reference: {image_builder_ref}\n"
         f"command: {' '.join(podman_command(ctx, *run_args))}\n"
         f"exit_code: {completed.returncode}\n"
         f"expected_output: {output_path}\n"
@@ -137,14 +104,14 @@ def build_qcow2(repo_root: Path | None = None, output_name: str = "raven-os-v0.1
         print(completed.stderr or completed.stdout, file=sys.stderr)
         return int(completed.returncode)
 
-    inspect_bib = run_podman(
+    inspect_tool = run_podman(
         ctx,
-        ["inspect", "--format", "{{.Digest}}", bib_ref],
+        ["inspect", "--format", "{{.Digest}}", image_builder_ref],
         paths.repo_root,
     )
-    if inspect_bib.returncode == 0 and (inspect_bib.stdout or "").strip():
-        (paths.evidence_dir / "bootc-image-builder-digest.txt").write_text(
-            (inspect_bib.stdout or "").strip() + "\n",
+    if inspect_tool.returncode == 0 and (inspect_tool.stdout or "").strip():
+        (paths.evidence_dir / "image-builder-digest.txt").write_text(
+            (inspect_tool.stdout or "").strip() + "\n",
             encoding="utf-8",
         )
 

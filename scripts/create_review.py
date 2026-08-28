@@ -552,6 +552,11 @@ def default_file_list(repo_root: Path, increment: str) -> list[str]:
                 "scripts/boot_smoke_qemu.py",
                 ".circleci/config.yml",
                 "docs/adr/0001-use-circleci-free-as-primary-v0.1-cloud-build-authority.md",
+                "docs/adr/0002-migrate-disk-image-builds-to-osbuild-image-builder.md",
+                "docs/adr/0003-use-cirrus-ci-full-vm-as-primary-m04-build-authority.md",
+                "docs/versions/v0.1/CIRCLECI-M04-BLOCKER.md",
+                "scripts/image_builder_cli.py",
+                "tests/test_002d_builder_migration.py",
             ]
         )
     return [p for p in interesting if (repo_root / p).exists()]
@@ -584,11 +589,11 @@ def create_review(
         decisions=[
             "Applied Sol INC-001 acceptance (20 points) per Prompt 002 instruction.",
             "Official Fedora Kinoite base: quay.io/fedora/fedora-kinoite:44 (no silent fallback).",
-            "QCOW2 root filesystem: btrfs via bootc-image-builder.",
+            "QCOW2 root filesystem: btrfs via current osbuild/image-builder (--bootc-default-fs).",
             "Podman storage: repo-local graphroot via CONTAINERS_STORAGE_CONF (002B).",
             "Boot smoke: explicit UEFI/OVMF pflash (002B Sol audit correction).",
-            "Primary build authority: CircleCI Free cloud (ADR-0001); local Builder fallback.",
-            "Heavy M04 workflow manual via run_m04=false default (002C).",
+            "CircleCI heavy M04 disabled (002D osbuild mount blocker).",
+            "Cirrus intended as primary M04 authority when repo is public (ADR-0003).",
         ],
         risks=[
             (

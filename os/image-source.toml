@@ -14,6 +14,7 @@ qcow2_root_filesystem = "btrfs"
 raven_local_image = "localhost/raven-os:0.1-dev"
 
 [tooling]
-bootc_image_builder_reference = "quay.io/centos-bootc/bootc-image-builder:latest"
-bootc_image_builder_policy = "verify-on-builder-before-pin"
-bootc_image_builder_resolved_digest = ""
+image_builder_reference = "ghcr.io/osbuild/image-builder:latest"
+image_builder_policy = "verify-on-builder-before-pin"
+image_builder_resolved_digest = ""
+# Archived path (not preferred): quay.io/centos-bootc/bootc-image-builder

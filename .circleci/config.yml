@@ -1,5 +1,9 @@
 version: 2.1
 
+# Prompt 002D: CircleCI is not the M04 disk-image authority (osbuild mount blocker).
+# Heavy job definition is retained for history/diagnostics but cannot run.
+# See docs/versions/v0.1/CIRCLECI-M04-BLOCKER.md and ADR-0003.
+
 parameters:
   run_m04:
     type: boolean
@@ -15,40 +19,14 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install cloud Builder dependencies
+          name: Heavy M04 path disabled
           command: |
-            set -euxo pipefail
-            sudo apt-get update
-            sudo apt-get install -y podman qemu-system-x86 ovmf qemu-utils git curl jq python3
-            curl -LsSf https://astral.sh/uv/install.sh | sh
-            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$BASH_ENV"
-            curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$HOME/.local/bin"
-      - run:
-          name: Sync Python environment
-          command: |
-            source "$BASH_ENV"
-            uv sync --extra dev
-      - run:
-          name: Run M04 cloud pipeline
-          no_output_timeout: 90m
-          command: |
-            source "$BASH_ENV"
-            export RAVEN_CLOUD_BUILDER=1
-            uv run python -m scripts.run_m04_cloud
-      - store_artifacts:
-          path: .review/RAVEN-OS-V0.1-INC-002-REVIEW.zip
-          destination: review
-          when: always
-      - run:
-          name: Finalize job status from cloud result
-          when: always
-          command: |
-            set -euo pipefail
-            source "$BASH_ENV"
-            uv run python -m scripts.finalize_cloud_result
+            echo "CircleCI heavy M04 is disabled (Prompt 002D / ADR-0003)."
+            echo "Do not retry osbuild/QCOW2 on this executor."
+            exit 1
 
 workflows:
   m04-manual:
-    when: << pipeline.parameters.run_m04 >>
+    when: false
     jobs:
       - m04-cloud-build

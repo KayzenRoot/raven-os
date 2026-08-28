@@ -1,6 +1,7 @@
 # ADR 0001 — Use CircleCI Free as primary V0.1 cloud build authority
 
-- **Status:** Accepted
+- **Status:** Superseded for M04 disk-image / QCOW2/osbuild authority (see ADR-0003).
+  CircleCI remains optional for lightweight diagnostics only.
 - **Date:** 2026-08-27
 - **Increment:** INC-002 / Prompt 002C
 

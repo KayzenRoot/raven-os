@@ -22,7 +22,6 @@ def test_circleci_operator_doc_exists() -> None:
     assert doc.is_file()
     body = doc.read_text(encoding="utf-8")
     assert "circleci auth login" in body
-    assert "run_m04=true" in body
     assert CIRCLECI_CONFIG.is_file()
 
 
@@ -31,10 +30,11 @@ def test_circleci_run_m04_defaults_false() -> None:
     assert re.search(r"run_m04:\s*\n\s*type:\s*boolean\s*\n\s*default:\s*false", text)
 
 
-def test_circleci_heavy_workflow_is_manual_only() -> None:
+def test_circleci_heavy_m04_is_disabled() -> None:
     text = CIRCLECI_CONFIG.read_text(encoding="utf-8")
-    assert "when: << pipeline.parameters.run_m04 >>" in text
+    assert "when: false" in text
     assert "m04-cloud-build" in text
+    assert "Heavy M04 path disabled" in text
 
 
 def test_circleci_uses_machine_executor_medium_ubuntu() -> None:
@@ -55,15 +55,13 @@ def test_circleci_has_no_dlc_or_remote_caches() -> None:
 
 def test_circleci_stores_only_review_zip_artifact() -> None:
     text = CIRCLECI_CONFIG.read_text(encoding="utf-8")
-    assert "store_artifacts:" in text
-    assert "RAVEN-OS-V0.1-INC-002-REVIEW.zip" in text
     assert ".qcow2" not in text
 
 
-def test_adr_exists_for_circleci_primary_builder() -> None:
+def test_adr_0001_is_superseded_for_disk_image() -> None:
     assert ADR.is_file()
     body = ADR.read_text(encoding="utf-8")
-    assert "CircleCI Free" in body
+    assert "Superseded" in body
     assert "FALLBACK" in body or "fallback" in body.lower()
 
 
@@ -87,14 +85,12 @@ def test_run_m04_cloud_ci_gate_omits_cloud_builder_env() -> None:
 
 def test_circleci_finalizes_via_repository_script() -> None:
     text = CIRCLECI_CONFIG.read_text(encoding="utf-8")
-    assert "scripts.finalize_cloud_result" in text
-    text = CIRCLECI_CONFIG.read_text(encoding="utf-8")
-    assert "when: << pipeline.parameters.run_m04 >>" in text
+    assert "when: false" in text
+    assert "<<" not in text
 
 
 def test_circleci_rejects_shell_heredoc_syntax() -> None:
     text = CIRCLECI_CONFIG.read_text(encoding="utf-8")
-    allowed_interpolation = "<< pipeline.parameters.run_m04 >>"
     forbidden_tokens = ("<<'PY'", '<<"PY"', "<<PY", "<<EOF", "<<'EOF'", '<<"EOF"')
     for token in forbidden_tokens:
         assert token not in text, f"shell heredoc token must not appear in CircleCI config: {token}"
@@ -102,9 +98,6 @@ def test_circleci_rejects_shell_heredoc_syntax() -> None:
     for line_number, line in enumerate(text.splitlines(), start=1):
         if "<<" not in line:
             continue
-        if allowed_interpolation in line:
-            continue
         raise AssertionError(
-            "unexpected '<<' outside CircleCI parameter interpolation "
-            f"on line {line_number}: {line.strip()}"
+            f"unexpected '<<' in disabled CircleCI config on line {line_number}: {line.strip()}"
         )

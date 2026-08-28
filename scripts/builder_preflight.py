@@ -9,9 +9,13 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+from scripts.image_builder_cli import (
+    image_builder_build_help_args,
+    image_builder_help_args,
+)
 from scripts.raven_build_config import (
-    BIB_REFERENCE,
     DEFAULT_BASE_IMAGE,
+    IMAGE_BUILDER_REFERENCE,
     acceleration_blocker,
     build_paths,
     command_exists,
@@ -76,34 +80,53 @@ def inspect_base_image(base_reference: str, paths: Any, ctx: Any) -> dict[str, A
     }
 
 
-def inspect_bib_image(bib_reference: str, paths: Any, ctx: Any) -> dict[str, Any]:
-    pull = run_podman(ctx, ["pull", bib_reference], paths.repo_root)
+def inspect_image_builder(image_reference: str, paths: Any, ctx: Any) -> dict[str, Any]:
+    pull = run_podman(ctx, ["pull", image_reference], paths.repo_root)
     if pull.returncode != 0:
         return {
             "status": "blocked",
-            "reason": "bootc-image-builder pull failed",
-            "reference": bib_reference,
+            "reason": "osbuild/image-builder pull failed",
+            "reference": image_reference,
             "digest": "",
+            "help_excerpt": "",
             "output": (pull.stdout or "") + (pull.stderr or ""),
         }
     inspect = run_podman(
         ctx,
-        ["inspect", "--format", "{{.Digest}}", bib_reference],
+        ["inspect", "--format", "{{.Digest}}", image_reference],
         paths.repo_root,
     )
     digest = (inspect.stdout or "").strip()
     if inspect.returncode != 0 or not digest:
         return {
             "status": "blocked",
-            "reason": "bootc-image-builder inspect failed",
-            "reference": bib_reference,
+            "reason": "osbuild/image-builder inspect failed",
+            "reference": image_reference,
             "digest": "",
+            "help_excerpt": "",
             "output": (inspect.stdout or "") + (inspect.stderr or ""),
         }
+    help_run = run_podman(
+        ctx, ["run", "--rm", image_reference, *image_builder_help_args()], paths.repo_root
+    )
+    build_help = run_podman(
+        ctx,
+        ["run", "--rm", image_reference, *image_builder_build_help_args()],
+        paths.repo_root,
+    )
+    help_text = (
+        (help_run.stdout or "")
+        + (help_run.stderr or "")
+        + (build_help.stdout or "")
+        + (build_help.stderr or "")
+    )[:8000]
+    paths.evidence_dir.mkdir(parents=True, exist_ok=True)
+    (paths.evidence_dir / "image-builder-help.txt").write_text(help_text + "\n", encoding="utf-8")
     return {
         "status": "ok",
-        "reference": bib_reference,
+        "reference": image_reference,
         "digest": digest,
+        "help_excerpt": help_text[:500],
     }
 
 
@@ -113,7 +136,7 @@ def evaluate_preflight(repo_root: Path | None = None) -> dict[str, Any]:
     image = manifest["image"]
     tooling = manifest["tooling"]
     base_reference = str(image.get("base_reference", DEFAULT_BASE_IMAGE))
-    bib_reference = str(tooling.get("bootc_image_builder_reference", BIB_REFERENCE))
+    bib_reference = str(tooling.get("image_builder_reference", IMAGE_BUILDER_REFERENCE))
     cloud_builder = is_cloud_builder()
     acceleration = resolve_acceleration()
 
@@ -154,7 +177,7 @@ def evaluate_preflight(repo_root: Path | None = None) -> dict[str, Any]:
             "base_reference": base_reference,
             "digest": "",
         },
-        "bootc_image_builder": inspect_bib_image(bib_reference, paths, podman_ctx)
+        "image_builder": inspect_image_builder(bib_reference, paths, podman_ctx)
         if is_linux_x86_64() and podman_ctx is not None
         else {
             "status": "blocked",
@@ -182,10 +205,10 @@ def evaluate_preflight(repo_root: Path | None = None) -> dict[str, Any]:
         blockers.append(
             f"base image verification blocked: {checks['base_image'].get('reason', 'unknown')}"
         )
-    if checks["bootc_image_builder"]["status"] != "ok":
+    if checks["image_builder"]["status"] != "ok":
         blockers.append(
-            "bootc-image-builder verification blocked: "
-            f"{checks['bootc_image_builder'].get('reason', 'unknown')}"
+            "osbuild/image-builder verification blocked: "
+            f"{checks['image_builder'].get('reason', 'unknown')}"
         )
 
     if blockers:
@@ -197,7 +220,7 @@ def evaluate_preflight(repo_root: Path | None = None) -> dict[str, Any]:
         update_manifest_verified_digests(
             paths,
             base_digest=str(checks["base_image"]["digest"]),
-            bib_digest=str(checks["bootc_image_builder"]["digest"]),
+            bib_digest=str(checks["image_builder"]["digest"]),
         )
 
     return {
@@ -227,7 +250,7 @@ def write_evidence(report: dict[str, Any], paths: Any) -> None:
     base = report["checks"]["base_image"]
     if base.get("digest"):
         lines.append(f"verified_base_digest: {base['digest']}")
-    bib = report["checks"]["bootc_image_builder"]
+    bib = report["checks"]["image_builder"]
     if bib.get("digest"):
         lines.append(f"verified_bib_digest: {bib['digest']}")
     text_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -247,8 +270,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"BLOCKER: {blocker}")
     if report["checks"]["base_image"].get("digest"):
         print(f"base digest: {report['checks']['base_image']['digest']}")
-    if report["checks"]["bootc_image_builder"].get("digest"):
-        print(f"bib digest: {report['checks']['bootc_image_builder']['digest']}")
+    if report["checks"]["image_builder"].get("digest"):
+        print(f"image-builder digest: {report['checks']['image_builder']['digest']}")
     return int(report["exit_code"])
 
 

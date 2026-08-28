@@ -27,16 +27,17 @@
 | Test module | Covers |
 |-------------|--------|
 | `tests/test_m04_image_contracts.py` | Containerfile/manifest; UEFI/OVMF boot smoke contract; shared Podman storage; path guards; M01–M03 ACCEPTED; M04 not ACCEPTED |
-| `tests/test_circleci_config.py` | `.circleci/config.yml` manual `run_m04`; machine executor; no DLC/cache/workspace; REVIEW ZIP artifact only |
+| `tests/test_circleci_config.py` | CircleCI heavy M04 disabled; no DLC; no shell heredocs |
 | `tests/test_cloud_acceleration.py` | KVM/TCG acceleration policy; UEFI pflash command builder |
+| `tests/test_002d_builder_migration.py` | image-builder CLI; no archived BIB preferred; no `.cirrus.yml` while private; 20% progress |
 
-## CircleCI cloud gates (manual Layer B)
+## CircleCI / Cirrus (Layer B)
 
 | Command / artifact | Layer | Purpose |
 |--------------------|-------|---------|
-| Pipeline parameter `run_m04=true` | B | Manual heavy workflow only |
-| `just run-m04-cloud` / `scripts/run_m04_cloud.py` | B | Ordered M04 gates + REVIEW ZIP |
-| CircleCI artifact | B | `RAVEN-OS-V0.1-INC-002-REVIEW.zip` only |
+| CircleCI `m04-manual` | — | **Disabled** (`when: false`); do not retry |
+| Cirrus `.cirrus.yml` | — | **Not present** until repo is public |
+| `just ci-image` | B | Local Fedora Builder fallback |
 
 ## Quality / image commands
 
@@ -46,7 +47,7 @@
 | `just builder-preflight` | B | Builder capability + base pull/inspect |
 | `just build-image` | B | Raven OCI build |
 | `just image-check` | B | OCI inspection |
-| `just build-qcow2` | B | QCOW2 via bootc-image-builder |
+| `just build-qcow2` | B | QCOW2 via current osbuild/image-builder |
 | `just artifact-metadata` | B | SHA-256 provenance |
 | `just boot-smoke` | B | Bounded QEMU boot proof |
 | `just ci-image` | B | Aggregate expensive gates (Builder only) |

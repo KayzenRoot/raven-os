@@ -1,6 +1,11 @@
-# CircleCI Operator Guide (V0.1 / M04)
+# CircleCI Operator Guide (V0.1)
 
-Developer-only operations for the Raven CircleCI cloud Builder. CircleCI CLI is **not** a Raven runtime dependency.
+Developer-only operations. CircleCI CLI is **not** a Raven runtime dependency.
+
+**Prompt 002D:** CircleCI heavy M04 (`m04-cloud-build`) is **disabled**. Do not
+trigger `run_m04=true`. See [CIRCLECI-M04-BLOCKER.md](CIRCLECI-M04-BLOCKER.md).
+
+The CLI remains useful for inspecting historical runs and validating YAML.
 
 ## Install CLI (Windows)
 
@@ -61,21 +66,11 @@ circleci job get <job-id>
 
 Use runtime `--help` on each command; CircleCI CLI v1 flags may change between releases.
 
-## Manual M04 trigger (`run_m04=true`)
+## Manual M04 trigger
 
-The heavy workflow is **disabled by default**. CircleCI CLI `--param run_m04=true` passes a string, not a boolean, so use the repository trigger helper:
-
-```powershell
-just trigger-m04-cloud
-```
-
-Equivalent authenticated API path (uses stored OAuth token via `circleci api`):
-
-```powershell
-uv run python -m scripts.trigger_m04_pipeline
-```
-
-Do not change the default parameter in config.
+**Disabled.** `just trigger-m04-cloud` exits nonzero. Do not use CircleCI for
+QCOW2/osbuild. Cirrus is the intended successor and is blocked while the GitHub
+repository is private.
 
 Monitor without the browser:
 

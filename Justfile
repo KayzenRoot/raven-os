@@ -54,7 +54,7 @@ run-m04-cloud:
 circleci-validate:
     circleci config validate
 
-# Trigger manual M04 cloud pipeline (boolean run_m04 via API JSON)
+# CircleCI heavy M04 is disabled (Prompt 002D). Command refuses to trigger.
 trigger-m04-cloud:
     uv run python -m scripts.trigger_m04_pipeline
 
