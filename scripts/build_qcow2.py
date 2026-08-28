@@ -23,6 +23,10 @@ from scripts.raven_build_config import (
 )
 
 
+def image_builder_config_path(repo_root: Path) -> Path:
+    return repo_root / "os" / "image-builder-config.toml"
+
+
 def image_builder_container_run_args(
     *,
     output_mount: Path,
@@ -30,8 +34,9 @@ def image_builder_container_run_args(
     image_builder_ref: str,
     rootfs: str,
     local_tag: str,
+    config_path: Path | None = None,
 ) -> list[str]:
-    return [
+    args = [
         "run",
         "--rm",
         "--privileged",
@@ -41,12 +46,19 @@ def image_builder_container_run_args(
         f"{output_mount}:/output",
         "-v",
         f"{storage_mount_path}:/var/lib/containers/storage",
-        image_builder_ref,
-        *image_builder_build_qcow2_args(
-            bootc_ref=local_tag,
-            rootfs=rootfs,
-        ),
     ]
+    if config_path is not None and config_path.is_file():
+        args.extend(["-v", f"{config_path.resolve()}:/config.toml:ro"])
+    args.extend(
+        [
+            image_builder_ref,
+            *image_builder_build_qcow2_args(
+                bootc_ref=local_tag,
+                rootfs=rootfs,
+            ),
+        ]
+    )
+    return args
 
 
 def build_qcow2(repo_root: Path | None = None, output_name: str = "raven-os-v0.1.qcow2") -> int:
@@ -80,12 +92,14 @@ def build_qcow2(repo_root: Path | None = None, output_name: str = "raven-os-v0.1
         return 1
 
     output_mount = paths.qcow2_dir.resolve()
+    builder_config = image_builder_config_path(paths.repo_root)
     run_args = image_builder_container_run_args(
         output_mount=output_mount,
         storage_mount_path=ctx.storage_mount_path,
         image_builder_ref=image_builder_ref,
         rootfs=rootfs,
         local_tag=local_tag,
+        config_path=builder_config if builder_config.is_file() else None,
     )
     completed = run_podman(ctx, run_args, paths.repo_root)
     log_path = paths.evidence_dir / "build-qcow2.log"
@@ -93,6 +107,8 @@ def build_qcow2(repo_root: Path | None = None, output_name: str = "raven-os-v0.1
         f"storage_strategy: {ctx.strategy}\n"
         f"storage_mount_source: {ctx.storage_mount_path}\n"
         f"image_builder_reference: {image_builder_ref}\n"
+        f"image_builder_config: {builder_config if builder_config.is_file() else 'none'}\n"
+        f"serial_console_kargs: console=tty0 console=ttyS0,115200n8\n"
         f"command: {' '.join(podman_command(ctx, *run_args))}\n"
         f"exit_code: {completed.returncode}\n"
         f"expected_output: {output_path}\n"

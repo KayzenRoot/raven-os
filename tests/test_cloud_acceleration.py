@@ -75,14 +75,14 @@ def test_qemu_command_uses_uefi_pflash_for_tcg(tmp_path: Path) -> None:
     assert "q35,accel=tcg" in joined
     assert "if=pflash" in joined
     assert "-cpu max" in joined
+    assert "-snapshot" in cmd
 
 
-def test_boot_smoke_uses_longer_cloud_timeout() -> None:
-    text = (Path(__file__).resolve().parents[1] / "scripts" / "boot_smoke.py").read_text(
-        encoding="utf-8"
-    )
-    assert "is_cloud_builder" in text
-    assert "300" in text
+def test_boot_smoke_cloud_timeout_via_resolve() -> None:
+    from scripts.boot_smoke import resolve_timeout_seconds
+
+    with patch("scripts.boot_smoke.is_cloud_builder", return_value=True):
+        assert resolve_timeout_seconds(None) == 300
 
 
 def test_qemu_command_uses_kvm_and_host_cpu_when_requested(tmp_path: Path) -> None:

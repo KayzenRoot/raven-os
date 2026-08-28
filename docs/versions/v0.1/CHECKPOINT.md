@@ -2,7 +2,7 @@
 
 - **STATUS:** IN PROGRESS
 - **VERSION:** V0.1
-- **PHASE:** Image Foundation (M04) — Prompt 002E-R1 exhausted; boot-smoke UEFI serial gap
+- **PHASE:** Image Foundation (M04) — Prompt 002E-R2 boot-smoke harness hardening
 - **OBJECTIVE:** Deliver a small VM Cognitive Seed (local-first cognitive Linux OS seed), not the full long-term product.
 - **VERSION PROGRESS:** 20% (20/100 Sol-accepted points; M04 pending real Builder Layer B)
 - **COMPLETED POINTS:** 20
@@ -18,9 +18,9 @@ Per Prompt 002 instruction from Sol (not executor self-acceptance):
 
 ## Current scope
 
-INC-002 / Prompt 002E — Cirrus operational path retired (network cannot reach
-`cirrus-ci.com` without VPN). M04 build authority moved to **GitHub Actions**
-standard public `ubuntu-24.04` runner (`workflow_dispatch` + `confirm_m04=true`).
+INC-002 / Prompt 002E-R2 — boot-smoke harness comprehensively hardened before new
+heavy GHA attempts. M04 build authority remains **GitHub Actions** standard public
+`ubuntu-24.04` runner (`workflow_dispatch` + `confirm_m04=true`).
 Repository `KayzenRoot/raven-os` is **PUBLIC**. M04 remains **BLOCKED** until a
 real QCOW2 + UEFI boot passes on GitHub Actions and Sol audits the REVIEW ZIP.
 Points stay 20 / 20%.
@@ -35,43 +35,50 @@ Points stay 20 / 20%.
 
 | Item | Status |
 |------|--------|
-| INC-002 / M04 | **BLOCKED** — GitHub Actions workflow added; Layer B (QCOW2 + boot) not yet proven |
+| INC-002 / M04 | **BLOCKED** — harness hardened (002E-R2); Layer B boot-smoke not yet proven on GHA |
 
-## Prompt 002E infrastructure change (applied in source)
+## Prompt 002E-R2 harness changes (applied in source)
 
-- ADR-0004: public GitHub standard runner as primary M04 authority
-- ADR-0003: superseded for M04 (Cirrus evaluated and retired)
-- `.cirrus.yml` removed; Cirrus is not an operational M04 dependency
-- `.github/workflows/m04.yml`: manual M04 validation (`confirm_m04`, public repo gate)
-- `scripts/github_actions_bootstrap.sh`: runner bootstrap + disk policy
-- CircleCI heavy M04 workflow remains disabled (`when: false`)
+- QCOW2 static preboot (`qemu-img info/check`, owner/mode evidence)
+- UEFI/OVMF preboot with paired CODE/VARS validation
+- QEMU `-snapshot` + explicit virtio-blk boot disk (base QCOW2 immutable)
+- Popen-based observable process control; launch error vs boot timeout classification
+- Guest-level serial markers required (EFI-only fails)
+- Serial console kargs via `os/image-builder-config.toml` mounted at `/config.toml`
+- Failure diagnostics ZIP (`raven-m04-diagnostics` artifact on GHA failure)
+- CLI timeout contract fixed (omit → 300s cloud / 120s local)
 - Operator: [GITHUB-ACTIONS-OPERATOR.md](GITHUB-ACTIONS-OPERATOR.md)
 
 ## Blockers
 
-M04 Layer B (real QCOW2 + UEFI boot smoke) has not yet passed on GitHub Actions.
-GitHub M04 attempt history on `main`:
+M04 Layer B (real QCOW2 + UEFI boot smoke) has not yet passed on GitHub Actions
+after 002E-R2 harness fix. Prior attempt history on `main`:
 
 | Run | SHA | Result | Failed step |
 |-----|-----|--------|-------------|
 | `33191087333` | `ce093ec`/`f462879` | FAIL (~2m) | `builder-preflight` / podman path |
 | `33191467126` | `f462879` | FAIL (~11m) | `image-check` — conmon journald log driver |
 | `33192739565` | `0e3d57e` (crun only) | FAIL (~11m) | `image-check` — same conmon/journald error |
-| `33193783890` | `1f603e8` (002E-R1 #1) | FAIL (~18m) | `boot-smoke` — UEFI serial markers not observed (KVM) |
-| `33195816360` | `d2439ab` (002E-R1 #2) | FAIL (~19m) | `boot-smoke` — same; TCG in 0.14s, no serial markers |
+| `33193783890` | `1f603e8` (002E-R1 #1) | FAIL (~18m) | `boot-smoke` — no serial markers (KVM) |
+| `33195816360` | `d2439ab` (002E-R1 #2) | FAIL (~0.14s) | `boot-smoke` — TCG; immediate QEMU exit; no stderr surfaced |
 
-Run `33193783890` (`1f603e8`, 002E-R1 `k8s-file`) cleared `image-check`. Both
-002E-R1 attempts failed `boot-smoke` (KVM ~18m then TCG ~0.14s; no UEFI serial
-markers). Prompt 002E-R1 heavy retry budget **exhausted (2/2)**. Do not trigger
-another GHA M04 run without Sol authorization.
-CircleCI heavy M04 stays disabled. Do not start M05.
+Run `33195816360` facts (verified via `gh run view --log-failed`):
+
+- GitHub runner exposed `/dev/kvm` during bootstrap
+- Raven intentionally forced TCG for cloud (`RAVEN_CLOUD_BUILDER=1`)
+- `builder-preflight` reported acceleration `tcg`
+- All gates through `artifact-metadata` passed; `boot-smoke` failed in ~0.14s
+- Old harness misclassified immediate QEMU exit as "serial markers not observed"
+- Root cause class: QEMU launch failure (likely disk permission / missing snapshot), not guest boot timeout
+
+Prompt 002E-R1 retry budget **exhausted (2/2)**. Prompt 002E-R2 authorizes **2 NEW**
+heavy attempts. Do not start M05.
 
 ## Next step
 
-Sol: audit boot-smoke evidence from runs `33193783890` and `33195816360`
-(`.build/evidence/boot-smoke*.log/json` in GHA dumps). Decide whether a new
-prompt authorizes further heavy attempts or an ADR-level boot-smoke change.
-M04 stays **BLOCKED** until Layer B passes and Sol audits the REVIEW ZIP.
+Executor: trigger GHA M04 run 1 with 002E-R2 harness; monitor; on failure download
+`raven-m04-diagnostics` and apply at most one evidence-backed correction before run 2.
+Sol: audit REVIEW ZIP on full pass; M04 may become **REVIEW** only after Layer B passes.
 
 ## Decisions
 
@@ -84,15 +91,12 @@ M04 stays **BLOCKED** until Layer B passes and Sol audits the REVIEW ZIP.
 
 ### Layer A (local)
 
-- `just ci` — includes 002E contracts (GitHub Actions workflow, Cirrus retired, CircleCI disabled)
+- `just ci` — 94 tests PASS (002E-R2 boot-smoke hardening contracts)
 
 ### Layer B (real QCOW2 + UEFI boot)
 
-- GHA run `33193783890` (`1f603e8`): all gates through `artifact-metadata` passed;
-  `image-check` ok; `boot-smoke` failed (KVM, no serial markers).
-- GHA run `33195816360` (`d2439ab`): same gate pass pattern; `boot-smoke` failed
-  again (TCG, 0.14s, acceleration `tcg`, no serial markers).
-- Layer B not yet proven. No REVIEW ZIP uploaded (failed before artifact step).
+- Pending 002E-R2 GHA run(s) after harness push
+- No REVIEW ZIP yet (Layer B not proven)
 
 ## DoD status summary
 

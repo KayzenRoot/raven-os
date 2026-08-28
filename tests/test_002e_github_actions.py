@@ -91,6 +91,13 @@ def test_github_actions_uploads_review_zip_only_short_retention() -> None:
     assert ".qcow2" not in text
 
 
+def test_github_actions_uploads_diagnostics_on_failure() -> None:
+    text = _workflow_text()
+    assert "name: raven-m04-diagnostics" in text
+    assert "RAVEN-OS-V0.1-INC-002-DIAGNOSTICS.zip" in text
+    assert text.count("if: failure()") >= 1
+
+
 def test_github_actions_job_gates_public_repo_and_confirm() -> None:
     text = _workflow_text()
     assert "inputs.confirm_m04 == true" in text

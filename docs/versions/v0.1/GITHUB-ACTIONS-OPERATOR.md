@@ -69,6 +69,12 @@ On failure:
 gh run view <run-id> --log-failed
 ```
 
+On failure:
+
+```bash
+gh run download <run-id> -n raven-m04-diagnostics -D .review-downloads
+```
+
 ## Download REVIEW ZIP (success only)
 
 ```bash
@@ -81,7 +87,8 @@ Validate `RAVEN-OS-V0.1-INC-002-REVIEW.zip` is non-zero, contains no QCOW2, and 
 ## Retry budget
 
 - Prompt 002E: maximum **2** heavy attempts — **exhausted** (runs `33191087333`, `33191467126`)
-- Prompt 002E-R1: **2 NEW** heavy attempts authorized (fresh correction budget for journald/conmon log driver)
+- Prompt 002E-R1: **2** heavy attempts — **exhausted** (runs `33193783890`, `33195816360`)
+- Prompt 002E-R2: **2 NEW** heavy attempts authorized (boot-smoke/QEMU/UEFI harness fix)
 - One run at a time; fix evidence-backed issues before retry
 - Run `just ci` locally before retry
 - Never move to paid/larger runners

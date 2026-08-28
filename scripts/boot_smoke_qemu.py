@@ -7,6 +7,10 @@ from pathlib import Path
 
 from scripts.raven_build_config import UefiFirmware, resolve_acceleration
 
+# Global -snapshot: guest writes go to temporary storage; base QCOW2 stays immutable.
+# virtio-blk-pci with explicit bootindex: deterministic UEFI boot disk on q35.
+# -no-reboot removed: firmware/guest reset must not be misclassified as launch failure.
+
 
 def build_qemu_uefi_command(
     *,
@@ -32,11 +36,13 @@ def build_qemu_uefi_command(
         f"if=pflash,format=raw,readonly=on,file={firmware.code_path}",
         "-drive",
         f"if=pflash,format=raw,file={firmware.vars_runtime_path}",
+        "-snapshot",
         "-drive",
-        f"file={qcow2},format=qcow2,if=virtio",
+        f"file={qcow2},format=qcow2,if=none,id=raven-disk",
+        "-device",
+        "virtio-blk-pci,drive=raven-disk,bootindex=1",
         "-serial",
         f"file:{serial_log}",
         "-display",
         "none",
-        "-no-reboot",
     ]

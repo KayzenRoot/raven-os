@@ -59,7 +59,20 @@ jobs:
             fi
           done || true
 
+      - name: Create diagnostics package on failure
+        if: failure()
+        run: uv run python -m scripts.create_diagnostics
+
+      - name: Upload diagnostics artifact
+        if: failure()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v4.6.2
+        with:
+          name: raven-m04-diagnostics
+          path: .review/RAVEN-OS-V0.1-INC-002-DIAGNOSTICS.zip
+          retention-days: 1
+
       - name: Finalize cloud result
+        if: always()
         run: uv run python -m scripts.finalize_cloud_result
 
       - name: Upload review artifact

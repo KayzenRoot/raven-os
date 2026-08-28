@@ -1,0 +1,5 @@
+# Raven OS M04 image-builder customization (serial console observability).
+# Mounted read-only at /config.toml inside osbuild/image-builder.
+
+[customizations.kernel]
+append = "console=tty0 console=ttyS0,115200n8"
