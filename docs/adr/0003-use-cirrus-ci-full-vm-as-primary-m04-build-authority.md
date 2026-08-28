@@ -1,6 +1,8 @@
 # ADR 0003 — Use Cirrus CI full VM as primary zero-cost M04 build authority
 
-- **Status:** Accepted
+- **Status:** Superseded for M04 disk-image / QCOW2/osbuild authority (see ADR-0004).
+  Cirrus was evaluated and retired in Prompt 002E (operator network cannot reach
+  `cirrus-ci.com` without VPN).
 - **Date:** 2026-08-28
 - **Increment:** INC-002 / Prompt 002D
 - **Supersedes:** ADR-0001 **only** for M04 disk-image / QCOW2/osbuild authority.

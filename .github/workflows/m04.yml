@@ -1,0 +1,60 @@
+# Raven OS M04 — manual GitHub Actions validation (ADR-0004 / Prompt 002E)
+# Standard public ubuntu-24.04 runner only. workflow_dispatch + confirm_m04 required.
+# Orchestration only; build logic lives in Justfile/scripts.
+
+name: Raven M04 Image Validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_m04:
+        description: Confirm expensive M04 validation run
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: raven-m04-heavy
+  cancel-in-progress: false
+
+jobs:
+  m04-validate:
+    if: inputs.confirm_m04 == true && github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      RAVEN_CLOUD_BUILDER: "1"
+    steps:
+      - name: Refuse private repository
+        if: github.event.repository.private == true
+        run: |
+          echo "BLOCKED - PUBLIC REPOSITORY REQUIRED FOR ZERO-COST STANDARD GITHUB RUNNER"
+          exit 1
+
+      - name: Refuse when confirm_m04 is false
+        if: inputs.confirm_m04 != true
+        run: |
+          echo "M04 requires explicit confirm_m04=true (workflow_dispatch input)."
+          exit 1
+
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Bootstrap GitHub runner for M04
+        run: bash scripts/github_actions_bootstrap.sh
+
+      - name: Run M04 cloud gates
+        run: just run-m04-cloud
+
+      - name: Finalize cloud result
+        run: uv run python -m scripts.finalize_cloud_result
+
+      - name: Upload review artifact
+        if: success()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v4.6.2
+        with:
+          name: raven-review
+          path: .review/RAVEN-OS-V0.1-INC-002-REVIEW.zip
+          retention-days: 1

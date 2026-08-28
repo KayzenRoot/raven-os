@@ -1,8 +1,8 @@
 version: 2.1
 
-# Prompt 002D: CircleCI is not the M04 disk-image authority (osbuild mount blocker).
+# Prompt 002E: CircleCI is not the M04 disk-image authority (osbuild mount blocker).
 # Heavy job definition is retained for history/diagnostics but cannot run.
-# See docs/versions/v0.1/CIRCLECI-M04-BLOCKER.md and ADR-0003.
+# See docs/versions/v0.1/CIRCLECI-M04-BLOCKER.md and ADR-0004.
 
 parameters:
   run_m04:
@@ -21,7 +21,7 @@ jobs:
       - run:
           name: Heavy M04 path disabled
           command: |
-            echo "CircleCI heavy M04 is disabled (Prompt 002D / ADR-0003)."
+            echo "CircleCI heavy M04 is disabled (Prompt 002E / ADR-0004)."
             echo "Do not retry osbuild/QCOW2 on this executor."
             exit 1
 

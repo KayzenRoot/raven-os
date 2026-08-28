@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refuse CircleCI heavy M04 triggers (Prompt 002D / ADR-0003)."""
+"""Refuse CircleCI heavy M04 triggers (Prompt 002E / ADR-0004)."""
 
 from __future__ import annotations
 
@@ -18,9 +18,10 @@ def trigger_m04_pipeline(
 ) -> dict[str, Any]:
     del repo_root, branch
     raise RuntimeError(
-        "CircleCI heavy M04 is disabled (Prompt 002D / ADR-0003). "
+        "CircleCI heavy M04 is disabled (Prompt 002E / ADR-0004). "
         "Do not retry osbuild/QCOW2 on CircleCI. "
-        "Use Cirrus m04-cirrus-builder (.cirrus.yml) via a main commit containing [m04]."
+        "Use GitHub Actions: gh workflow run m04.yml --ref main -f confirm_m04=true "
+        "(see docs/versions/v0.1/GITHUB-ACTIONS-OPERATOR.md)."
     )
 
 

@@ -22,7 +22,7 @@ Frozen module weights for Raven OS V0.1 (VM Cognitive Seed).
 ### Weight checks
 
 - M01 + M02 + M03 = **20** (accepted by Sol via INC-001 audit)
-- M04 = **12** (repository work present; Layer B **BLOCKED** — CircleCI osbuild rejected; Cirrus `.cirrus.yml` present, QCOW2+boot not yet proven)
+- M04 = **12** (repository work present; Layer B **BLOCKED** — GitHub Actions workflow added; QCOW2+boot not yet proven on cloud)
 - COMPLETED POINTS = **20** (Sol-accepted only; M04 not counted)
 - VERSION PROGRESS = **20%**
 
@@ -45,7 +45,7 @@ Applied per Prompt 002 instruction from Sol (not executor self-acceptance):
 | Increment | Scope | Points | Status |
 |-----------|-------|-------:|--------|
 | INC-001 | M01 + M02 + M03 — repository bootstrap | 20 | ACCEPTED (Sol) |
-| INC-002 | M04 — bootc base image + QCOW2 build path | 12 | BLOCKED — Cirrus App installed; Layer B not yet proven |
+| INC-002 | M04 — bootc base image + QCOW2 build path | 12 | BLOCKED — GitHub Actions M04 workflow; Layer B not yet proven |
 | INC-003 | Placeholder — future Sol-scoped increment | — | PLANNED |
 | INC-004 | Placeholder — future Sol-scoped increment | — | PLANNED |
 | INC-005 | Placeholder — future Sol-scoped increment | — | PLANNED |

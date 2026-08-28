@@ -46,7 +46,7 @@ boot-smoke:
 # Expensive real-image gates for Raven Builder / CircleCI (not part of fast ci)
 ci-image: builder-preflight build-image image-check build-qcow2 artifact-metadata boot-smoke
 
-# CircleCI/cloud orchestrator (sets RAVEN_CLOUD_BUILDER=1). Used by Cirrus M04.
+# CircleCI/cloud orchestrator (sets RAVEN_CLOUD_BUILDER=1). Used by GitHub Actions M04.
 run-m04-cloud:
     uv run python -m scripts.run_m04_cloud
 
@@ -54,7 +54,7 @@ run-m04-cloud:
 circleci-validate:
     circleci config validate
 
-# CircleCI heavy M04 is disabled (Prompt 002D). Command refuses to trigger.
+# CircleCI heavy M04 is disabled (Prompt 002E). Command refuses to trigger.
 trigger-m04-cloud:
     uv run python -m scripts.trigger_m04_pipeline
 

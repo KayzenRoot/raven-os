@@ -26,10 +26,11 @@ Compact map of repository areas. Distinguishes **present** from **planned**.
 | `scripts/artifact_metadata.py` | Present | SHA-256 provenance metadata |
 | `scripts/boot_smoke.py` | Present | Bounded UEFI QEMU boot smoke (KVM or TCG) |
 | `scripts/boot_smoke_qemu.py` | Present | UEFI QEMU command builder (testable) |
-| `scripts/run_m04_cloud.py` | Present | Ordered M04 gates + REVIEW ZIP (Cirrus/local; not CircleCI-triggered) |
-| `scripts/cirrus_bootstrap.sh` | Present | Cirrus VM package/tool install (thin YAML helper) |
+| `scripts/run_m04_cloud.py` | Present | Ordered M04 gates + REVIEW ZIP (GitHub Actions/local; not CircleCI-triggered) |
+| `scripts/github_actions_bootstrap.sh` | Present | GitHub Actions runner package/tool install + disk policy |
+| `scripts/cirrus_bootstrap.sh` | Present | Historical Cirrus helper (retired operational path) |
+| `.github/workflows/m04.yml` | Present | Manual M04 validation on standard public `ubuntu-24.04` runner |
 | `.circleci/config.yml` | Present | Heavy M04 workflow **disabled** (`when: false`) |
-| `.cirrus.yml` | Present | `[m04]`-gated Cirrus Community Cluster M04 (`m04-cirrus-builder`, execution lock) |
 | `.build/` | Generated (ignored) | `images/`, `qcow2/`, `evidence/`, Podman graphroot |
 
 ## Source packages (`src/`)

@@ -1,5 +1,10 @@
 # Cirrus CI Operator Guide (V0.1)
 
+> **RETIRED (Prompt 002E):** Cirrus is no longer the M04 build authority. Use
+> [GITHUB-ACTIONS-OPERATOR.md](GITHUB-ACTIONS-OPERATOR.md) and
+> [ADR-0004](../../adr/0004-use-public-github-standard-runner-as-m04-build-authority.md).
+> This document is retained for historical context only.
+
 Developer-only operations. Cirrus is **not** a Raven runtime dependency.
 
 **Prompt 002D:** Cirrus Community Cluster (`compute_engine_instance` +
