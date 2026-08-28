@@ -161,6 +161,8 @@ def test_build_qcow2_mounts_repo_graphroot_for_bootc_image_builder() -> None:
     text = (SCRIPTS / "build_qcow2.py").read_text(encoding="utf-8")
     assert "storage_mount_path" in text
     assert "/var/lib/containers/storage" in text
+    assert "SYS_ADMIN" in text
+    assert "/run/osbuild:/run/osbuild" in text
 
 
 def test_resolve_podman_context_uses_build_local_graphroot(

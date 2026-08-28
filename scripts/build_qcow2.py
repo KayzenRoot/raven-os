@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import subprocess
 import sys
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from scripts.raven_build_config import (
     build_paths,
     command_exists,
     ensure_within_build_root,
+    is_cloud_builder,
     is_linux_x86_64,
     load_manifest,
     podman_command,
@@ -20,6 +22,61 @@ from scripts.raven_build_config import (
     run_podman,
     write_podman_storage_evidence,
 )
+
+
+def prepare_cloud_bib_runtime() -> None:
+    if not is_cloud_builder():
+        return
+    for path in ("/run/osbuild", "/run/osbuild/containers", "/run/osbuild/containers/storage"):
+        subprocess.run(["sudo", "mkdir", "-p", path], check=False)
+        subprocess.run(["sudo", "chmod", "777", path], check=False)
+
+
+def bib_container_run_args(
+    *,
+    output_mount: Path,
+    storage_mount_path: str,
+    bib_ref: str,
+    rootfs: str,
+    local_tag: str,
+) -> list[str]:
+    run_args = [
+        "run",
+        "--rm",
+        "--privileged",
+        "--security-opt",
+        "label=type:unconfined_t",
+        "-v",
+        f"{output_mount}:/output",
+        "-v",
+        f"{storage_mount_path}:/var/lib/containers/storage",
+    ]
+    if is_cloud_builder():
+        run_args.extend(
+            [
+                "--cap-add",
+                "SYS_ADMIN",
+                "--security-opt",
+                "seccomp=unconfined",
+                "--security-opt",
+                "label=disable",
+                "-v",
+                "/run/osbuild:/run/osbuild",
+            ]
+        )
+    run_args.extend(
+        [
+            bib_ref,
+            "--type",
+            "qcow2",
+            "--rootfs",
+            rootfs,
+            "--target-arch",
+            "x86_64",
+            local_tag,
+        ]
+    )
+    return run_args
 
 
 def build_qcow2(repo_root: Path | None = None, output_name: str = "raven-os-v0.1.qcow2") -> int:
@@ -53,25 +110,14 @@ def build_qcow2(repo_root: Path | None = None, output_name: str = "raven-os-v0.1
         return 1
 
     output_mount = paths.qcow2_dir.resolve()
-    run_args = [
-        "run",
-        "--rm",
-        "--privileged",
-        "--security-opt",
-        "label=type:unconfined_t",
-        "-v",
-        f"{output_mount}:/output",
-        "-v",
-        f"{ctx.storage_mount_path}:/var/lib/containers/storage",
-        bib_ref,
-        "--type",
-        "qcow2",
-        "--rootfs",
-        rootfs,
-        "--target-arch",
-        "x86_64",
-        local_tag,
-    ]
+    prepare_cloud_bib_runtime()
+    run_args = bib_container_run_args(
+        output_mount=output_mount,
+        storage_mount_path=ctx.storage_mount_path,
+        bib_ref=bib_ref,
+        rootfs=rootfs,
+        local_tag=local_tag,
+    )
     completed = run_podman(ctx, run_args, paths.repo_root)
     log_path = paths.evidence_dir / "build-qcow2.log"
     log_path.write_text(
