@@ -54,6 +54,7 @@ def bib_container_run_args(
     if is_cloud_builder():
         run_args.extend(
             [
+                "--userns=host",
                 "--cap-add",
                 "SYS_ADMIN",
                 "--security-opt",
@@ -62,6 +63,8 @@ def bib_container_run_args(
                 "label=disable",
                 "-v",
                 "/run/osbuild:/run/osbuild",
+                "-v",
+                "/dev:/dev",
             ]
         )
     run_args.extend(
