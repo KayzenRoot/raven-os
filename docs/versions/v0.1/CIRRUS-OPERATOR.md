@@ -44,13 +44,17 @@ GitHub App Cirrus CI is already installed for this repository only
 
 The task name is `m04-cirrus-builder`. It does **not** run on ordinary pushes.
 
-Cirrus `only_if` creates the task only when **all** of:
+Cirrus `only_if` (single-line in `.cirrus.yml`) creates the task only when
+**all** of:
 
 - `$CIRRUS_REPO_FULL_NAME == 'KayzenRoot/raven-os'`
 - `$CIRRUS_BRANCH == 'main'`
 - `$CIRRUS_CHANGE_MESSAGE =~ '.*\[m04\].*'`
   (`CIRRUS_CHANGE_MESSAGE` = commit message on push; first line is
   `CIRRUS_CHANGE_TITLE`. There is no `CIRRUS_COMMIT_MESSAGE`.)
+
+If GitHub shows a `cirrus-ci` check suite with **0 check-runs** on an `[m04]`
+SHA, verify `only_if` is one line (no YAML `>-` folding).
 
 To start **one** cloud M04: commit on `main` with `[m04]` in the message and
 push to `origin/main`. Example:

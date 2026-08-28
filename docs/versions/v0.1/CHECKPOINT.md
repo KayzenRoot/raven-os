@@ -61,9 +61,11 @@ the heavy task is commit-message gated, not dashboard-triggered. Do not open
 
 ## Next step
 
-Push **one** `main` commit whose message contains `[m04]` so Cirrus can create
-`m04-cirrus-builder`. Poll GitHub Checks on that SHA. Do not trigger CircleCI
-M04. Do not start M05. M04 stays **BLOCKED** until Layer B evidence exists.
+`ee90484` (`[m04]` gate) posted a Cirrus check suite with **0 check-runs** —
+likely multiline `only_if` parse issue. Flattened `only_if` to a single line;
+pushed a follow-up `[m04]` commit. Poll GitHub Checks on the new SHA for
+`m04-cirrus-builder`. Do not trigger CircleCI M04. Do not start M05. M04 stays
+**BLOCKED** until Layer B evidence exists.
 
 ## Decisions
 

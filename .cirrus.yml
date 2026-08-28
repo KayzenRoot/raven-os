@@ -12,10 +12,7 @@ env:
 task:
   name: m04-cirrus-builder
   # Default Cirrus trigger is automatic; only_if is the cost gate (no dashboard).
-  only_if: >-
-    $CIRRUS_REPO_FULL_NAME == 'KayzenRoot/raven-os'
-    && $CIRRUS_BRANCH == 'main'
-    && $CIRRUS_CHANGE_MESSAGE =~ '.*\[m04\].*'
+  only_if: $CIRRUS_REPO_FULL_NAME == 'KayzenRoot/raven-os' && $CIRRUS_BRANCH == 'main' && $CIRRUS_CHANGE_MESSAGE =~ '.*\[m04\].*'
   timeout_in: 120m
   execution_lock:
     name: raven-os-m04-heavy
