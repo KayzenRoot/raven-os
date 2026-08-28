@@ -1,6 +1,9 @@
 # Raven OS — Cirrus CI thin M04 orchestration (ADR-0003 / Prompt 002D)
-# OSS-free Community Cluster full VM. Manual only. REVIEW ZIP artifact only.
-# Do not use a Kubernetes container executor for M04 (osbuild nested mounts).
+# OSS-free Community Cluster full VM. Automatic only when the push is on main
+# AND the commit message contains [m04]. Ordinary pushes/PRs do not start M04.
+# Cirrus sets CIRRUS_CHANGE_MESSAGE (commit message on push; PR title+body on PR).
+# There is no CIRRUS_COMMIT_MESSAGE. CIRRUS_CHANGE_TITLE is the first line.
+# REVIEW ZIP artifact only. Do not use a Kubernetes container executor for M04.
 
 env:
   RAVEN_CLOUD_BUILDER: "1"
@@ -8,8 +11,11 @@ env:
 
 task:
   name: m04-cirrus-builder
-  only_if: $CIRRUS_REPO_FULL_NAME == 'KayzenRoot/raven-os'
-  trigger_type: manual
+  # Default Cirrus trigger is automatic; only_if is the cost gate (no dashboard).
+  only_if: >-
+    $CIRRUS_REPO_FULL_NAME == 'KayzenRoot/raven-os'
+    && $CIRRUS_BRANCH == 'main'
+    && $CIRRUS_CHANGE_MESSAGE =~ '.*\[m04\].*'
   timeout_in: 120m
   execution_lock:
     name: raven-os-m04-heavy

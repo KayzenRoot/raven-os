@@ -29,7 +29,7 @@ Compact map of repository areas. Distinguishes **present** from **planned**.
 | `scripts/run_m04_cloud.py` | Present | Ordered M04 gates + REVIEW ZIP (Cirrus/local; not CircleCI-triggered) |
 | `scripts/cirrus_bootstrap.sh` | Present | Cirrus VM package/tool install (thin YAML helper) |
 | `.circleci/config.yml` | Present | Heavy M04 workflow **disabled** (`when: false`) |
-| `.cirrus.yml` | Present | Manual Cirrus Community Cluster M04 (`m04-cirrus-builder`, execution lock) |
+| `.cirrus.yml` | Present | `[m04]`-gated Cirrus Community Cluster M04 (`m04-cirrus-builder`, execution lock) |
 | `.build/` | Generated (ignored) | `images/`, `qcow2/`, `evidence/`, Podman graphroot |
 
 ## Source packages (`src/`)

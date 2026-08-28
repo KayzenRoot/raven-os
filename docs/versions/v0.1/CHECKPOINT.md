@@ -43,7 +43,9 @@ passes on cloud Cirrus and Sol audits the REVIEW ZIP. Points stay 20 / 20%.
 - ADR-0003: Cirrus Community Cluster full VM is primary M04 authority (public repo)
 - CircleCI heavy M04 workflow disabled (`when: false`)
 - Evidence: [CIRCLECI-M04-BLOCKER.md](CIRCLECI-M04-BLOCKER.md)
-- `.cirrus.yml`: manual `m04-cirrus-builder` + execution lock; REVIEW ZIP only
+- `.cirrus.yml`: `m04-cirrus-builder` + execution lock; REVIEW ZIP only
+- Trigger: automatic **only** when `main` commit message contains `[m04]`
+  (`CIRRUS_CHANGE_MESSAGE`; not dashboard, not every push)
 - Operator: [CIRRUS-OPERATOR.md](CIRRUS-OPERATOR.md)
 - GitHub App Cirrus CI authorized for `KayzenRoot/raven-os` only (id `157274806`)
 
@@ -52,20 +54,16 @@ passes on cloud Cirrus and Sol audits the REVIEW ZIP. Points stay 20 / 20%.
 M04 Layer B (real QCOW2 + UEFI boot smoke) has not yet passed on Cirrus.
 CircleCI heavy M04 stays disabled. Do not start M05.
 
-Cirrus GitHub App is installed (id `157274806`). Push `e8a669a` created an empty
-GitHub Check Suite `89940580996` (`cirrus-ci`, status queued, **0 check-runs**,
-`updated_at` unchanged). REST rerequest returned 404; GraphQL `rerequestCheckSuite`
-is GitHub-App-only. This host can TCP to `34.117.12.6:443` but TLS handshake
-fails (`curl 35` / Python `SSLEOFError`) for `https://api.cirrus-ci.com` and
-`https://cirrus-ci.com`. Manual `m04-cirrus-builder` was **not** started.
+Cirrus GitHub App is installed (id `157274806`). Ordinary pushes without `[m04]`
+create empty GitHub Check Suites (`cirrus-ci`, 0 check-runs). That is expected:
+the heavy task is commit-message gated, not dashboard-triggered. Do not open
+`cirrus-ci.com`. Do not use VPN. Watch GitHub Checks on the `[m04]` SHA.
 
 ## Next step
 
-Reach Cirrus GraphQL from a network that can complete TLS to `api.cirrus-ci.com`
-(VPN off this ISP). Then trigger **one** `m04-cirrus-builder`. Watch GitHub Checks
-on `e8a669a` (do not require opening cirrus-ci.com in the human browser).
-Do not trigger CircleCI M04. Do not start M05. M04 stays **BLOCKED** until
-Layer B evidence exists.
+Push **one** `main` commit whose message contains `[m04]` so Cirrus can create
+`m04-cirrus-builder`. Poll GitHub Checks on that SHA. Do not trigger CircleCI
+M04. Do not start M05. M04 stays **BLOCKED** until Layer B evidence exists.
 
 ## Decisions
 
@@ -78,7 +76,7 @@ Layer B evidence exists.
 
 ### Layer A (local)
 
-- `just ci` — includes 002D contracts (CircleCI disabled, Cirrus manual, image-builder CLI)
+- `just ci` — includes 002D contracts (CircleCI disabled, Cirrus `[m04]` gate, image-builder CLI)
 
 ### Layer B (real QCOW2 + UEFI boot)
 

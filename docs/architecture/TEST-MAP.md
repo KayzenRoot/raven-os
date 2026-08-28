@@ -29,14 +29,14 @@
 | `tests/test_m04_image_contracts.py` | Containerfile/manifest; UEFI/OVMF boot smoke contract; shared Podman storage; path guards; M01–M03 ACCEPTED; M04 not ACCEPTED |
 | `tests/test_circleci_config.py` | CircleCI heavy M04 disabled; no DLC; no shell heredocs |
 | `tests/test_cloud_acceleration.py` | KVM/TCG acceleration policy; UEFI pflash command builder |
-| `tests/test_002d_builder_migration.py` | image-builder CLI; Cirrus manual + lock; CircleCI disabled; 20% progress |
+| `tests/test_002d_builder_migration.py` | image-builder CLI; Cirrus `[m04]` gate + lock; CircleCI disabled; 20% progress |
 
 ## CircleCI / Cirrus (Layer B)
 
 | Command / artifact | Layer | Purpose |
 |--------------------|-------|---------|
 | CircleCI `m04-manual` | — | **Disabled** (`when: false`); do not retry |
-| Cirrus `.cirrus.yml` `m04-cirrus-builder` | B | Manual Community Cluster full VM; REVIEW ZIP only |
+| Cirrus `.cirrus.yml` `m04-cirrus-builder` | B | `[m04]`-gated Community Cluster full VM; REVIEW ZIP only |
 | `just ci-image` | B | Local Fedora Builder fallback |
 
 ## Quality / image commands

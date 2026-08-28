@@ -7,7 +7,7 @@
 authority ([ADR-0003](../../adr/0003-use-cirrus-ci-full-vm-as-primary-m04-build-authority.md))
 now that `KayzenRoot/raven-os` is **PUBLIC**.
 
-Manual task: `m04-cirrus-builder`. See [CIRRUS-OPERATOR.md](CIRRUS-OPERATOR.md).
+Task: `m04-cirrus-builder` (runs only when a `main` commit message contains `[m04]`). See [CIRRUS-OPERATOR.md](CIRRUS-OPERATOR.md).
 
 ## CircleCI
 

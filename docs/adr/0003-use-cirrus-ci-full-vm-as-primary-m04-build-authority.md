@@ -22,8 +22,9 @@ repositories. Cirrus is **not** free for private repositories.
 
 ## Decision
 
-1. **PRIMARY:** Cirrus CI Community Cluster full VM, manual heavy M04 task only
-   (`trigger_type: manual` + execution lock `raven-os-m04-heavy`).
+1. **PRIMARY:** Cirrus CI Community Cluster full VM, one heavy M04 task
+   (`m04-cirrus-builder` + execution lock `raven-os-m04-heavy`), gated so it
+   does not run on every push.
 2. **Executor:** `compute_engine_instance` with `image_project: cirrus-images`
    (OSS community images, **not** a paid GCP project). Nested virtualization is
    enabled so `/dev/kvm` can exist for osbuild/QEMU. Do not use a Kubernetes
@@ -39,9 +40,10 @@ repositories. Cirrus is **not** free for private repositories.
 Cirrus OSS credits apply to public repositories. If visibility ever becomes
 private again, stop using Cirrus and do not add paid compute.
 
-## Manual heavy task / cost guard
+## Heavy task / cost guard
 
-- Manual trigger only (no push/PR auto-run).
+- Commit-message gate only: `main` + `[m04]` in `CIRRUS_CHANGE_MESSAGE`
+  (no dashboard; no ordinary push/PR auto-run).
 - Execution lock against concurrent M04 jobs.
 - Timeout ~2 hours.
 - REVIEW ZIP artifact only (no QCOW2/OCI upload).

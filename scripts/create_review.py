@@ -611,7 +611,7 @@ def create_review(
             "002B: build/QCOW2/image-check share repo-local Podman graphroot for BIB visibility.",
             "002B: preflight blocks without OVMF firmware and records BIB digest when available.",
             "002C: CircleCI Free cloud builder (manual run_m04) with TCG fallback on cloud.",
-            "002D: CircleCI heavy M04 disabled; Cirrus manual m04-cirrus-builder added.",
+            "002D: CircleCI heavy M04 disabled; Cirrus m04-cirrus-builder is [m04]-gated.",
         ],
         cloud_result=cloud_result,
     )

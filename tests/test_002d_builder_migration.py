@@ -16,6 +16,22 @@ CIRRUS = ROOT / ".cirrus.yml"
 CIRCLECI = ROOT / ".circleci" / "config.yml"
 
 
+def _cirrus_only_if_expression(text: str) -> str:
+    lines = text.splitlines()
+    start = next(i for i, line in enumerate(lines) if line.lstrip().startswith("only_if:"))
+    header_indent = len(lines[start]) - len(lines[start].lstrip())
+    remainder = lines[start].split(":", 1)[1].strip()
+    collected: list[str] = [] if remainder in {">-", ">", "|-", "|", ""} else [remainder]
+    for line in lines[start + 1 :]:
+        if not line.strip():
+            continue
+        indent = len(line) - len(line.lstrip())
+        if indent <= header_indent:
+            break
+        collected.append(line.strip())
+    return " ".join(collected)
+
+
 def test_preferred_image_builder_is_not_archived_bib() -> None:
     assert IMAGE_BUILDER_REFERENCE.startswith("ghcr.io/osbuild/image-builder")
     assert "bootc-image-builder" not in IMAGE_BUILDER_REFERENCE
@@ -47,10 +63,10 @@ def test_circleci_trigger_helper_refuses_heavy_m04() -> None:
         assert "cirrus" in str(exc).lower()
 
 
-def test_cirrus_yml_exists_as_manual_heavy_m04() -> None:
+def test_cirrus_yml_exists_as_commit_gated_heavy_m04() -> None:
     assert CIRRUS.is_file()
     text = CIRRUS.read_text(encoding="utf-8")
-    assert "trigger_type: manual" in text
+    assert "trigger_type: manual" not in text
     assert "execution_lock:" in text
     assert "raven-os-m04-heavy" in text
     assert "timeout_in: 120m" in text
@@ -64,7 +80,16 @@ def test_cirrus_yml_exists_as_manual_heavy_m04() -> None:
     assert ".qcow2" not in text
     assert "RAVEN-OS-V0.1-INC-002-REVIEW.zip" in text
     assert re.search(r"^task:", text, re.MULTILINE)
-    assert "trigger_type: automatic" not in text
+    only_if = _cirrus_only_if_expression(text)
+    assert "CIRRUS_REPO_FULL_NAME" in only_if
+    assert "CIRRUS_BRANCH" in only_if
+    assert "== 'main'" in only_if
+    assert "CIRRUS_CHANGE_MESSAGE" in only_if
+    assert "CIRRUS_COMMIT_MESSAGE" not in only_if
+    assert r"\[m04\]" in only_if
+    assert "=~" in only_if
+    # Ordinary pushes without [m04] must not create the heavy task.
+    assert "trigger_type: manual" not in text
 
 
 def test_cirrus_does_not_use_k8s_container_executor() -> None:
@@ -112,7 +137,9 @@ def test_cirrus_operator_doc_exists() -> None:
     doc = ROOT / "docs" / "versions" / "v0.1" / "CIRRUS-OPERATOR.md"
     assert doc.is_file()
     text = doc.read_text(encoding="utf-8")
-    assert "trigger_type: manual" in text
+    assert "trigger_type: manual" not in text
+    assert "[m04]" in text
+    assert "CIRRUS_CHANGE_MESSAGE" in text
     assert "KayzenRoot/raven-os" in text
     assert "payment" in text.lower()
 
